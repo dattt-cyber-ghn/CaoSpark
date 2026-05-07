@@ -1770,6 +1770,7 @@ Bạn là senior security engineer
         <div class="result-file">
           <div class="result-file-header">
             <span id="r-filename">skill-name/SKILL.md</span>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy prompt</button>
           <button class="copy-btn" id="submitSparkBtn" onclick="submitSpark()">Nộp bài</button>
           </div>
           <div class="result-file-content" id="r-content"></div>
@@ -1969,6 +1970,17 @@ Bạn là senior security engineer
       md += '## Example\n' + example + '\n';
     }
     return { plain: md, slug: slug };
+  }
+
+  async function copyPrompt(button) {
+    if (!currentSkillPlain) {
+      showToast('Hãy tạo xong file prompt trước rồi copy nhé.');
+      return;
+    }
+    await navigator.clipboard.writeText(currentSkillPlain);
+    const original = button.textContent;
+    button.textContent = '✓ Đã copy';
+    setTimeout(() => { button.textContent = original; }, 1800);
   }
 
   function updateBuilder() {

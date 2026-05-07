@@ -1296,6 +1296,7 @@
         </div>
 
         <div class="quiz-nav">
+          <button class="btn" onclick="copyPrompt(this)">Copy prompt</button>
           <button class="btn btn-primary" id="submitCaoBtn" onclick="submitCao()">Nộp bài</button>
           <button class="btn btn-primary" onclick="restartQuiz()">↻ Tạo Skill mới</button>
         </div>
@@ -1489,6 +1490,17 @@
     let text = `SKILL: ${name}\n\n[CONTEXT]\n${c}\n\n[ACTION]\n${a}\n\n[OUTPUT]\n${o}`;
     if (cons) text += `\n\n[CONSTRAINTS]\n${cons}`;
     return text;
+  }
+
+  async function copyPrompt(button) {
+    if (!currentSkillPlain) {
+      showToast('Hãy tạo xong prompt trước rồi copy nhé.');
+      return;
+    }
+    await navigator.clipboard.writeText(currentSkillPlain);
+    const original = button.textContent;
+    button.textContent = '✓ Đã copy';
+    setTimeout(() => { button.textContent = original; }, 1800);
   }
 
   function showToast(message) {
