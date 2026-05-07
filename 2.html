@@ -1205,10 +1205,6 @@
         <a href="#builder">Builder</a>
         <a href="#quiz">Tự xây</a>
       </div>
-      <a href="1.html" class="switcher">
-        <span class="arrow">←</span>
-        <span>Quay về CAO (cơ bản)</span>
-      </a>
     </div>
   </div>
 </nav>
@@ -1770,7 +1766,7 @@ Bạn là senior security engineer
         <div class="result-file">
           <div class="result-file-header">
             <span id="r-filename">skill-name/SKILL.md</span>
-          <button class="copy-btn" onclick="copyResult()">📋 Copy File Skill.md</button>
+          <button class="copy-btn" id="submitSparkBtn" onclick="submitSpark()">Nộp bài</button>
           </div>
           <div class="result-file-content" id="r-content"></div>
         </div>
@@ -1802,7 +1798,7 @@ Bạn là senior security engineer
 
         <div class="qnav" style="border-top: none; padding-top: 0;">
           <button onclick="qrestart()">↻ Tạo Skill khác</button>
-          <button class="next" onclick="copyResult()">📋 Copy File Skill.md</button>
+          <button class="next" id="submitSparkBtnBottom" onclick="submitSpark()">Nộp bài</button>
         </div>
       </div>
     </div>
@@ -1862,8 +1858,18 @@ Bạn là senior security engineer
     tab: 'SPARK',
     skillLabel: 'SPARK'
   };
+  const PROFILE_KEY = 'caospark_profile';
   let currentSkillPlain = '';
   let gateOpen = false;
+
+  function getSavedProfile() {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
 
   function escHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2131,53 +2137,44 @@ Bạn là senior security engineer
     });
   }
 
-  async function copyCurrentSkill(button) {
-    if (!currentSkillPlain) return;
-    await navigator.clipboard.writeText(currentSkillPlain);
-    const original = button.textContent;
-    button.textContent = '✓ Đã gửi & copied';
-    setTimeout(() => { button.textContent = original; }, 2000);
-  }
+  async function submitSpark() {
+    const profile = getSavedProfile();
+    if (!profile?.name || !profile?.empId || !profile?.email) {
+      showToast('Thiếu thông tin người nộp. Hãy quay lại CAO để lưu thông tin trước.');
+      return;
+    }
 
-  async function submitCopyGate(event) {
-    event.preventDefault();
-    const data = validateGateForm();
-    if (!data) return;
-
-    const submitBtn = document.getElementById('gateSubmitBtn');
-    submitBtn.disabled = true;
-    const original = submitBtn.textContent;
-    submitBtn.textContent = 'Đang gửi...';
+    const submitBtns = [
+      document.getElementById('submitSparkBtn'),
+      document.getElementById('submitSparkBtnBottom'),
+    ].filter(Boolean);
+    const originals = submitBtns.map((btn) => btn.textContent);
+    submitBtns.forEach((btn) => {
+      btn.disabled = true;
+      btn.textContent = 'Đang nộp...';
+    });
 
     try {
-      let sheetSent = true;
-      try {
-        await postToSheet({
-          ...data,
-          sheet: COPY_CONTEXT.tab,
-          skill: COPY_CONTEXT.skillLabel,
-          skillText: currentSkillPlain,
-          page: '2.html',
-          timestamp: new Date().toISOString(),
-        });
-      } catch (err) {
-        sheetSent = false;
-        showToast(err.message || 'Chưa gửi được lên Google Sheet.');
-      }
-      await copyCurrentSkill(submitBtn);
-      showToast(sheetSent ? 'Đã gửi thông tin và copy file Skill vào clipboard.' : 'Đã copy file Skill, nhưng Google Sheet chưa được cấu hình endpoint.');
-      closeCopyGate();
+      await postToSheet({
+        name: profile.name,
+        empId: profile.empId,
+        email: profile.email,
+        skillText: currentSkillPlain,
+        sheet: COPY_CONTEXT.tab,
+        skill: COPY_CONTEXT.skillLabel,
+        sendEmail: true,
+        page: '2.html',
+        timestamp: new Date().toISOString(),
+      });
+      showToast('Đã nộp bài SPARK và gửi mail xác nhận.');
     } catch (err) {
-      document.getElementById('gateError').textContent = err.message || 'Không gửi được dữ liệu.';
-      showToast('Chưa gửi được lên Google Sheet.');
+      showToast(err.message || 'Không nộp được bài.');
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = original;
+      submitBtns.forEach((btn, i) => {
+        btn.disabled = false;
+        btn.textContent = originals[i];
+      });
     }
-  }
-
-  function copyResult() {
-    openCopyGate();
   }
 
   function qrestart() {
@@ -2191,14 +2188,6 @@ Bạn là senior security engineer
     qshow(1);
     document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
   }
-
-  document.getElementById('copyGateForm').addEventListener('submit', submitCopyGate);
-  document.getElementById('copyGate').addEventListener('click', (e) => {
-    if (e.target.id === 'copyGate') closeCopyGate();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && gateOpen) closeCopyGate();
-  });
 
   // ============ SCROLL REVEAL ============
   const obs = new IntersectionObserver((entries) => {

@@ -894,7 +894,6 @@
       <a href="#builder">Thử ngay</a>
       <a href="#skill">Skill</a>
       <a href="#quiz">Tự xây dựng</a>
-      <a class="page-switch" href="2.html">Spark (nâng cao) →</a>
     </div>
   </div>
 </nav>
@@ -1254,7 +1253,7 @@
         </div>
 
         <div class="quiz-nav">
-          <button class="btn" onclick="openCopyGate()">📋 Copy Skill</button>
+          <button class="btn btn-primary" id="submitCaoBtn" onclick="submitCao()">Nộp bài</button>
           <button class="btn btn-primary" onclick="restartQuiz()">↻ Tạo Skill mới</button>
         </div>
       </div>
@@ -1271,9 +1270,9 @@
   <div class="gate-modal__panel" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
     <button class="gate-modal__close" type="button" aria-label="Đóng" onclick="closeCopyGate()">×</button>
     <div class="gate-modal__eyebrow">Thông tin để gửi Mail</div>
-    <h3 class="gate-modal__title" id="gateTitle">Điền thông tin để nhận mẫu Skill</h3>
+    <h3 class="gate-modal__title" id="gateTitle">Điền thông tin để dùng cho cả CAO và SPARK</h3>
     <p class="gate-modal__copy">
-      Họ và tên, ID nhân viên và email ghn sẽ được dùng để gửi bảng mẫu Skill đã tạo qua mail, đồng thời lưu vào Google Sheet ở tab <strong>CAO</strong>.
+      Họ và tên, ID nhân viên và email ghn sẽ được lưu để dùng cho cả 2 trang. Trang CAO chỉ ghi Sheet, còn SPARK sẽ ghi Sheet và gửi mail xác nhận.
     </p>
     <form class="gate-form" id="copyGateForm">
       <div class="gate-field">
@@ -1288,11 +1287,11 @@
         <label for="gateEmail">Email ghn</label>
         <input id="gateEmail" type="email" autocomplete="email" />
       </div>
-      <div class="gate-note">Nếu chưa điền đủ, hệ thống sẽ không cho copy Skill.</div>
+      <div class="gate-note">Nếu chưa điền đủ, hệ thống sẽ không cho lưu thông tin.</div>
       <div class="gate-error" id="gateError"></div>
       <div class="gate-actions">
         <button type="button" onclick="closeCopyGate()">Hủy</button>
-        <button type="submit" class="primary" id="gateSubmitBtn">Gửi thông tin & Copy Skill</button>
+        <button type="submit" class="primary" id="gateSubmitBtn">Lưu thông tin</button>
       </div>
     </form>
   </div>
@@ -1305,7 +1304,7 @@
     <div class="logo">CAO<span>.method</span></div>
     <p>Học cách viết prompt — Bài học cho người mới bắt đầu</p>
     <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(244, 234, 213, 0.2); font-size: 14px;">
-      Đã thuần thục CAO? Học tiếp <a href="2.html" style="color: var(--accent-3); border-bottom: 1px solid var(--accent-3); padding-bottom: 1px;">Spark (nâng cao)</a> — framework nâng cao để xây Skill thật cho Antigravity →
+      Đã thuần thục CAO? Học tiếp <span style="color: var(--accent-3); border-bottom: 1px solid var(--accent-3); padding-bottom: 1px;">Spark (nâng cao)</span> — framework nâng cao để xây Skill thật cho Antigravity →
     </div>
   </div>
 </footer>
@@ -1321,8 +1320,28 @@
     tab: 'CAO',
     skillLabel: 'CAO'
   };
+  const PROFILE_KEY = 'caospark_profile';
   let currentSkillPlain = '';
   let gateOpen = false;
+
+  function getSavedProfile() {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function saveProfile(profile) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  }
+
+  function populateProfileForm(profile) {
+    document.getElementById('gateName').value = profile?.name || '';
+    document.getElementById('gateId').value = profile?.empId || '';
+    document.getElementById('gateEmail').value = profile?.email || '';
+  }
 
   function updatePreview() {
     const c = ctx.value.trim();
@@ -1438,10 +1457,7 @@
   }
 
   function openCopyGate() {
-    if (!currentSkillPlain) {
-      showToast('Hãy tạo xong Skill trước rồi mới copy nhé.');
-      return;
-    }
+    populateProfileForm(getSavedProfile());
     gateOpen = true;
     document.getElementById('copyGate').classList.add('is-open');
     document.getElementById('copyGate').setAttribute('aria-hidden', 'false');
@@ -1480,53 +1496,53 @@
     });
   }
 
-  async function copyCurrentSkill(button) {
-    if (!currentSkillPlain) return;
-    await navigator.clipboard.writeText(currentSkillPlain);
-    const original = button.textContent;
-    button.textContent = '✓ Đã gửi & copied';
-    setTimeout(() => { button.textContent = original; }, 2000);
-  }
-
-  async function submitCopyGate(event) {
+  async function saveProfileFromGate(event) {
     event.preventDefault();
     const data = validateGateForm();
     if (!data) return;
-
-    const submitBtn = document.getElementById('gateSubmitBtn');
-    submitBtn.disabled = true;
-    const original = submitBtn.textContent;
-    submitBtn.textContent = 'Đang gửi...';
-
-    try {
-      let sheetSent = true;
-      try {
-        await postToSheet({
-          ...data,
-          sheet: COPY_CONTEXT.tab,
-          skill: COPY_CONTEXT.skillLabel,
-          skillText: currentSkillPlain,
-          page: '1.html',
-          timestamp: new Date().toISOString(),
-        });
-      } catch (err) {
-        sheetSent = false;
-        showToast(err.message || 'Chưa gửi được lên Google Sheet.');
-      }
-      await copyCurrentSkill(submitBtn);
-      showToast(sheetSent ? 'Đã gửi thông tin và copy Skill vào clipboard.' : 'Đã copy Skill, nhưng Google Sheet chưa được cấu hình endpoint.');
-      closeCopyGate();
-    } catch (err) {
-      document.getElementById('gateError').textContent = err.message || 'Không gửi được dữ liệu.';
-      showToast('Chưa gửi được lên Google Sheet.');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = original;
-    }
+    saveProfile(data);
+    showToast('Đã lưu thông tin. Bây giờ bạn có thể nộp bài.');
+    closeCopyGate();
   }
 
-  function copySkill() {
-    openCopyGate();
+  async function submitCao() {
+    const profile = getSavedProfile();
+    if (!profile?.name || !profile?.empId || !profile?.email) {
+      openCopyGate();
+      return;
+    }
+
+    const submitBtn = document.getElementById('submitCaoBtn');
+    const original = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang nộp...';
+    }
+
+    try {
+      await postToSheet({
+        name: profile.name,
+        empId: profile.empId,
+        email: profile.email,
+        skillText: currentSkillPlain,
+        sheet: COPY_CONTEXT.tab,
+        skill: COPY_CONTEXT.skillLabel,
+        sendEmail: false,
+        page: '1.html',
+        timestamp: new Date().toISOString(),
+      });
+      showToast('Đã nộp bài vào CAO. Đang chuyển sang SPARK...');
+      setTimeout(() => {
+        window.location.href = '2.html';
+      }, 500);
+    } catch (err) {
+      showToast(err.message || 'Không nộp được bài.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = original;
+      }
+    }
   }
 
   function restartQuiz() {
@@ -1539,13 +1555,18 @@
     document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
   }
 
-  document.getElementById('copyGateForm').addEventListener('submit', submitCopyGate);
+  document.getElementById('copyGateForm').addEventListener('submit', saveProfileFromGate);
   document.getElementById('copyGate').addEventListener('click', (e) => {
     if (e.target.id === 'copyGate') closeCopyGate();
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && gateOpen) closeCopyGate();
   });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openCopyGate);
+  } else {
+    openCopyGate();
+  }
 
   // ============ SCROLL REVEAL ============
   const observer = new IntersectionObserver((entries) => {
