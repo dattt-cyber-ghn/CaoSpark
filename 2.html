@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SPARK Method — Tự xây dựng Skill cho Antigravity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-elev: #14141c;
+    --bg-card: #1a1a24;
+    --border: #2a2a38;
+    --border-bright: #3a3a4a;
+    --text: #e8e8f0;
+    --text-dim: #9090a0;
+    --text-faint: #60606e;
+    --accent: #ffd84d;       /* yellow electric */
+    --accent-2: #00f0a8;     /* mint green */
+    --accent-3: #ff6b6b;     /* coral red */
+    --accent-4: #6b9eff;     /* sky blue */
+    --accent-5: #c87aff;     /* violet */
+    --grid: rgba(255, 255, 255, 0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 60px 60px;
+    background-attachment: fixed;
+  }
+
+  /* Glow gradients */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 216, 77, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0, 240, 168, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 20% 80%, rgba(200, 122, 255, 0.05) 0%, transparent 50%);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ============ NAV ============ */
+  nav {
+    position: sticky;
+    top: 0;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 16px 0;
+  }
+  nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+  }
+  .logo span { color: var(--accent); }
+
+  .nav-right { display: flex; gap: 24px; align-items: center; }
+  .nav-links { display: flex; gap: 24px; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .switcher:hover { border-color: var(--accent); color: var(--accent); }
+  .switcher .arrow { color: var(--text-faint); }
+
+  @media (max-width: 768px) { .nav-links { display: none; } }
+
+  /* ============ HERO ============ */
+  .hero {
+    padding: 120px 0 80px;
+    position: relative;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .hero-meta .level {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-2);
+  }
+  .hero-meta .level::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent-2);
+    box-shadow: 0 0 8px var(--accent-2);
+  }
+  .hero-meta .divider { color: var(--text-faint); }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-size: clamp(56px, 9vw, 130px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 32px;
+  }
+  .hero h1 .glow {
+    color: var(--accent);
+    font-style: italic;
+    text-shadow: 0 0 40px rgba(255, 216, 77, 0.3);
+  }
+  .hero h1 .stroke {
+    -webkit-text-stroke: 1.5px var(--text);
+    color: transparent;
+    font-style: italic;
+  }
+  .hero-sub {
+    font-size: 19px;
+    max-width: 640px;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+    line-height: 1.5;
+  }
+  .hero-sub strong { color: var(--text); font-weight: 600; }
+
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 14px 24px;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 30px rgba(255, 216, 77, 0.4);
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--text);
+    padding: 14px 24px;
+    border: 1px solid var(--border-bright);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ============ PROMPT EVOLUTION ============ */
+  .evolution {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+  .section-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+    background: rgba(255, 216, 77, 0.05);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-size: clamp(40px, 5.5vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    max-width: 900px;
+  }
+  .section-title .ital { font-style: italic; color: var(--accent); }
+  .section-intro {
+    font-size: 17px;
+    max-width: 680px;
+    color: var(--text-dim);
+    margin-bottom: 60px;
+  }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 50px;
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 900px) { .ladder { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .ladder { grid-template-columns: 1fr; } }
+
+  .rung {
+    padding: 28px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--bg-elev);
+    position: relative;
+    transition: background 0.3s;
+  }
+  .rung:last-child { border-right: none; }
+  .rung:hover { background: var(--bg-card); }
+  @media (max-width: 900px) {
+    .rung:nth-child(2) { border-right: none; }
+    .rung:nth-child(1), .rung:nth-child(2) { border-bottom: 1px solid var(--border); }
+  }
+  @media (max-width: 600px) {
+    .rung { border-right: none; border-bottom: 1px solid var(--border); }
+    .rung:last-child { border-bottom: none; }
+  }
+
+  .rung .level-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .rung h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 4px;
+    color: var(--rung-color);
+  }
+  .rung[data-rung="1"] { --rung-color: var(--text-dim); }
+  .rung[data-rung="2"] { --rung-color: var(--accent-4); }
+  .rung[data-rung="3"] { --rung-color: var(--accent-2); }
+  .rung[data-rung="4"] { --rung-color: var(--accent); }
+
+  .rung .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .rung p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .rung .ex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--bg);
+    padding: 10px;
+    color: var(--text-faint);
+    border-left: 2px solid var(--rung-color);
+  }
+
+  /* ============ SPARK ============ */
+  .spark-section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+  .spark-title-wrap {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .spark-title-wrap .section-tag {
+    display: inline-block;
+  }
+  .spark-letters {
+    display: flex;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 32px);
+    margin: 40px 0;
+    flex-wrap: wrap;
+  }
+  .letter-badge {
+    width: clamp(80px, 12vw, 140px);
+    height: clamp(80px, 12vw, 140px);
+    border: 1.5px solid var(--badge-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(50px, 8vw, 100px);
+    color: var(--badge-color);
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 0 40px var(--badge-glow);
+    transition: transform 0.3s;
+    cursor: default;
+  }
+  .letter-badge:hover { transform: translateY(-6px) rotate(-3deg); }
+  .letter-badge[data-l="S"] { --badge-color: var(--accent); --badge-glow: rgba(255, 216, 77, 0.15); }
+  .letter-badge[data-l="P"] { --badge-color: var(--accent-3); --badge-glow: rgba(255, 107, 107, 0.15); }
+  .letter-badge[data-l="A"] { --badge-color: var(--accent-2); --badge-glow: rgba(0, 240, 168, 0.15); }
+  .letter-badge[data-l="R"] { --badge-color: var(--accent-4); --badge-glow: rgba(107, 158, 255, 0.15); }
+  .letter-badge[data-l="K"] { --badge-color: var(--accent-5); --badge-glow: rgba(200, 122, 255, 0.15); }
+
+  /* SPARK component cards */
+  .spark-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 60px;
+  }
+
+  .spark-card {
+    background: var(--bg-elev);
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 40px;
+    transition: background 0.2s;
+  }
+  .spark-card:hover { background: var(--bg-card); }
+  @media (max-width: 768px) {
+    .spark-card { grid-template-columns: 1fr; gap: 20px; padding: 28px; }
+  }
+
+  .spark-card-left {
+    border-right: 1px solid var(--border);
+    padding-right: 32px;
+  }
+  @media (max-width: 768px) {
+    .spark-card-left { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+  }
+
+  .spark-letter-big {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 100px;
+    line-height: 0.9;
+    color: var(--card-color);
+    margin-bottom: 8px;
+  }
+  .spark-card[data-c="S"] { --card-color: var(--accent); }
+  .spark-card[data-c="P"] { --card-color: var(--accent-3); }
+  .spark-card[data-c="A"] { --card-color: var(--accent-2); }
+  .spark-card[data-c="R"] { --card-color: var(--accent-4); }
+  .spark-card[data-c="K"] { --card-color: var(--accent-5); }
+
+  .spark-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .spark-vi {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .spark-card-right h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  .spark-card-right h3 .em { color: var(--card-color); font-style: italic; }
+  .spark-card-right > p {
+    font-size: 15px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .spark-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .spark-meta { grid-template-columns: 1fr; } }
+  .spark-meta-block {
+    border: 1px solid var(--border);
+    padding: 14px;
+    background: var(--bg);
+  }
+  .spark-meta-block .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .spark-meta-block .val {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .spark-example {
+    background: var(--bg);
+    border-left: 2px solid var(--card-color);
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .spark-example .ex-lbl {
+    color: var(--card-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ============ ANATOMY DEEP DIVE ============ */
+  .anatomy {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+  .anatomy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+    margin-top: 40px;
+  }
+  @media (max-width: 900px) { .anatomy-grid { grid-template-columns: 1fr; } }
+
+  .anatomy-text h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .anatomy-text h3 .em { color: var(--accent); font-style: italic; }
+  .anatomy-text p {
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    font-size: 15px;
+  }
+  .anatomy-text p strong { color: var(--text); }
+  .anatomy-text ul {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .anatomy-text li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 14px;
+    display: flex;
+    gap: 12px;
+  }
+  .anatomy-text li::before {
+    content: '→';
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .file-preview {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .file-header {
+    background: var(--bg);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .file-header .dots {
+    display: flex;
+    gap: 6px;
+  }
+  .file-header .dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .file-header .dots span:nth-child(1) { background: #ff5f56; }
+  .file-header .dots span:nth-child(2) { background: #ffbd2e; }
+  .file-header .dots span:nth-child(3) { background: #27c93f; }
+  .file-header .filename { color: var(--text); margin-left: 8px; }
+  .file-content {
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text-dim);
+  }
+  .file-content .frontmatter { color: var(--accent); }
+  .file-content .key { color: var(--accent-3); }
+  .file-content .val { color: var(--accent-2); }
+  .file-content .heading { color: var(--accent); font-weight: 700; }
+  .file-content .comment { color: var(--text-faint); font-style: italic; }
+
+  /* ============ DESCRIPTION DEEP DIVE ============ */
+  .desc-deep {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 40px;
+    margin-top: 60px;
+  }
+  .desc-deep h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .desc-deep h4 .em { color: var(--accent-3); font-style: italic; }
+  .desc-deep > p {
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    font-size: 15px;
+  }
+  .desc-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 768px) { .desc-compare { grid-template-columns: 1fr; } }
+  .desc-bad, .desc-good {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+  }
+  .desc-bad { border-left: 3px solid var(--accent-3); }
+  .desc-good { border-left: 3px solid var(--accent-2); }
+  .desc-bad::before, .desc-good::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .desc-bad::before { color: var(--accent-3); }
+  .desc-good::before { color: var(--accent-2); }
+  .desc-compare code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 10px;
+    display: block;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .desc-compare p {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  /* ============ BUILDER ============ */
+  .builder-section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+  .builder-shell {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    margin-top: 50px;
+    overflow: hidden;
+  }
+  .builder-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+  .tab {
+    padding: 14px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: all 0.2s;
+    background: transparent;
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    background: var(--bg);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .builder-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 600px;
+  }
+  @media (max-width: 900px) { .builder-body { grid-template-columns: 1fr; } }
+
+  .builder-form {
+    padding: 32px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    max-height: 800px;
+  }
+  @media (max-width: 900px) { .builder-form { border-right: none; border-bottom: 1px solid var(--border); max-height: none; } }
+
+  .form-block { margin-bottom: 24px; }
+  .form-block label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .form-block .pill {
+    background: var(--pill-color);
+    color: var(--bg);
+    padding: 3px 8px;
+    font-weight: 700;
+  }
+  .form-block[data-c="S"] .pill { background: var(--accent); }
+  .form-block[data-c="P"] .pill { background: var(--accent-3); }
+  .form-block[data-c="A"] .pill { background: var(--accent-2); }
+  .form-block[data-c="R"] .pill { background: var(--accent-4); }
+  .form-block[data-c="K"] .pill { background: var(--accent-5); }
+
+  .form-block .hint {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .form-block input,
+  .form-block textarea {
+    width: 100%;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  .form-block input { padding: 10px 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .form-block textarea { min-height: 70px; }
+  .form-block input:focus,
+  .form-block textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* Preview */
+  .builder-preview {
+    background: var(--bg);
+    padding: 0;
+    position: relative;
+  }
+  .preview-header {
+    padding: 16px 20px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-header .filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .preview-content-wrap {
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    color: var(--text-dim);
+    min-height: 500px;
+  }
+  .preview-content-wrap .fm { color: var(--accent); }
+  .preview-content-wrap .k { color: var(--accent-3); }
+  .preview-content-wrap .v { color: var(--accent-2); }
+  .preview-content-wrap .h { color: var(--accent); font-weight: 700; }
+  .preview-content-wrap .c { color: var(--text-faint); }
+  .preview-empty {
+    color: var(--text-faint);
+    font-style: italic;
+  }
+
+  /* ============ QUIZ ============ */
+  .quiz-section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+  .quiz-shell {
+    max-width: 820px;
+    margin: 50px auto 0;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+  }
+  .quiz-progress {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .qp-step {
+    flex: 1;
+    padding: 14px 8px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+    transition: all 0.3s;
+  }
+  .qp-step:last-child { border-right: none; }
+  .qp-step.done { color: var(--accent-2); }
+  .qp-step.active { color: var(--accent); background: var(--bg-elev); }
+  .qp-step .num {
+    display: block;
+    font-size: 18px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+
+  .quiz-step-body {
+    padding: 40px;
+  }
+  @media (max-width: 600px) { .quiz-step-body { padding: 24px; } }
+
+  .qstep { display: none; }
+  .qstep.active { display: block; }
+  .qstep .step-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .qstep h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .qstep h3 .em { color: var(--accent); font-style: italic; }
+  .qstep .why {
+    background: var(--bg);
+    border-left: 2px solid var(--accent-2);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .qstep .why strong { color: var(--accent-2); }
+  .qstep textarea, .qstep input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px;
+    margin-bottom: 16px;
+    resize: vertical;
+  }
+  .qstep input { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .qstep textarea:focus, .qstep input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .qstep textarea { min-height: 100px; }
+
+  .qstep .examples {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .qstep .examples strong {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+  }
+  .qstep .examples ul { list-style: none; }
+  .qstep .examples li {
+    padding: 6px 0;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .qstep .examples li::before {
+    content: '→ ';
+    color: var(--accent);
+  }
+
+  .qnav {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .qnav button {
+    padding: 12px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+  }
+  .qnav button:hover { border-color: var(--accent); color: var(--accent); }
+  .qnav button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .qnav button:disabled:hover { border-color: var(--border-bright); color: var(--text); }
+  .qnav .next {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  .qnav .next:hover { box-shadow: 0 0 20px rgba(255, 216, 77, 0.3); border-color: var(--accent); color: var(--bg); }
+
+  /* Quiz Result */
+  .qresult { display: none; padding: 40px; }
+  .qresult.active { display: block; }
+  .qresult .step-tag {
+    color: var(--accent-2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .qresult h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    margin: 12px 0 20px;
+  }
+  .qresult > p {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  /* ============ COPY GATE MODAL ============ */
+  .gate-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 10, 15, 0.72);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    padding: 24px;
+  }
+  .gate-modal.is-open { display: flex; }
+  .gate-modal__panel {
+    width: min(560px, 100%);
+    background: var(--bg-elev);
+    border: 1px solid var(--border-bright);
+    box-shadow: 12px 12px 0 var(--bg);
+    padding: 28px;
+    position: relative;
+  }
+  .gate-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: 1px solid var(--border-bright);
+    background: var(--bg);
+    color: var(--text);
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .gate-modal__eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .gate-modal__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    line-height: 1.05;
+    margin-bottom: 12px;
+  }
+  .gate-modal__copy {
+    color: var(--text-dim);
+    margin-bottom: 22px;
+    font-size: 15px;
+  }
+  .gate-form {
+    display: grid;
+    gap: 14px;
+  }
+  .gate-field {
+    display: grid;
+    gap: 6px;
+  }
+  .gate-field label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .gate-field input {
+    width: 100%;
+    border: 1px solid var(--border-bright);
+    background: var(--bg);
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--text);
+  }
+  .gate-field input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+  }
+  .gate-note {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .gate-error {
+    min-height: 18px;
+    font-size: 13px;
+    color: var(--accent-3);
+    margin-top: 2px;
+  }
+  .gate-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .gate-actions button {
+    border: 1px solid var(--border-bright);
+    background: var(--bg);
+    color: var(--text);
+    padding: 12px 16px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .gate-actions .primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .gate-actions button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .gate-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: var(--bg);
+    color: var(--text);
+    padding: 12px 16px;
+    border: 1px solid var(--border-bright);
+    z-index: 10000;
+    display: none;
+    max-width: min(92vw, 480px);
+    text-align: center;
+  }
+  .gate-toast.is-visible { display: block; }
+  .result-file {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .result-file-header {
+    background: var(--bg-elev);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .result-file-content {
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    color: var(--text-dim);
+  }
+  .result-file-content .fm { color: var(--accent); }
+  .result-file-content .k { color: var(--accent-3); }
+  .result-file-content .v { color: var(--accent-2); }
+  .result-file-content .h { color: var(--accent); font-weight: 700; }
+
+  .install-steps {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .install-steps h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .install-steps ol {
+    padding-left: 20px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .install-steps li { padding: 6px 0; }
+  .install-steps code {
+    background: var(--bg-elev);
+    color: var(--accent);
+    padding: 2px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    border: 1px solid var(--border);
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 50px 0;
+    text-align: center;
+    background: var(--bg);
+  }
+  footer .logo {
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+  footer p {
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  footer .bridge {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  footer .bridge a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 1px;
+  }
+
+  /* Reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      SPARK<span>.system</span>
+    </div>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#evolution">Tiến hóa</a>
+        <a href="#spark">Framework</a>
+        <a href="#anatomy">Cấu trúc</a>
+        <a href="#builder">Builder</a>
+        <a href="#quiz">Tự xây</a>
+      </div>
+      <a href="1.html" class="switcher">
+        <span class="arrow">←</span>
+        <span>Quay về CAO (cơ bản)</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="level">LEVEL 02 — ADVANCED</span>
+      <span class="divider">/</span>
+      <span>cho người muốn xây hệ thống</span>
+    </div>
+    <h1>
+      Từ <span class="stroke">prompt</span><br>
+      đến <span class="glow">skill thật sự</span>
+    </h1>
+    <p class="hero-sub">
+      Học framework <strong>SPARK</strong> để biến yêu cầu lặp lại thành Skill có thể tái sử dụng,
+      tự kích hoạt khi cần, và <strong>chạy được trên Antigravity, Claude Code, Cursor</strong>.
+      Output cuối cùng: file <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">SKILL.md</code> đúng chuẩn agentskills.io.
+    </p>
+    <div class="hero-actions">
+      <a href="#evolution" class="btn-primary">Bắt đầu →</a>
+      <a href="#quiz" class="btn-ghost">Bỏ qua, tự xây ngay</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVOLUTION ============ -->
+<section id="evolution" class="evolution">
+  <div class="container">
+    <span class="section-tag">01 / Định vị</span>
+    <h2 class="section-title">Bốn cấp độ <span class="ital">trao đổi với AI</span></h2>
+    <p class="section-intro">
+      Trước khi xây Skill, bạn cần hiểu Skill nằm ở đâu trong bậc thang.
+      Mỗi cấp độ có công cụ và mức tự động hóa khác nhau.
+    </p>
+
+    <div class="ladder">
+      <div class="rung" data-rung="1">
+        <div class="level-num">LV.01</div>
+        <h4>Prompt</h4>
+        <div class="label">Một lần dùng</div>
+        <p>Bạn gõ một câu yêu cầu. AI trả lời. Hết.</p>
+        <div class="ex">"Viết email xin nghỉ phép"</div>
+      </div>
+      <div class="rung" data-rung="2">
+        <div class="level-num">LV.02</div>
+        <h4>Template</h4>
+        <div class="label">Lưu trữ thủ công</div>
+        <p>Prompt được copy-paste lại nhiều lần. Lưu trong Notes.</p>
+        <div class="ex">[Vai trò] + [Yêu cầu] + [Định dạng] = template paste lại</div>
+      </div>
+      <div class="rung" data-rung="3">
+        <div class="level-num">LV.03</div>
+        <h4>Skill</h4>
+        <div class="label">Tự kích hoạt</div>
+        <p>Đóng gói thành file. AI <strong>tự load</strong> khi yêu cầu khớp.</p>
+        <div class="ex">Bạn nói "review code này" → skill code-review tự bật</div>
+      </div>
+      <div class="rung" data-rung="4">
+        <div class="level-num">LV.04</div>
+        <h4>Agent</h4>
+        <div class="label">Tự thực thi</div>
+        <p>Nhiều Skill + tools + quyền hành động. Tự chạy multi-step.</p>
+        <div class="ex">Agent trong Antigravity tự code, test, debug, commit</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 30px; color: var(--text-faint); font-size: 13px; font-family: 'JetBrains Mono', monospace; text-align: center;">
+      ↑ Trang này tập trung vào <span style="color: var(--accent);">LV.03 — Skill</span> — viên gạch để xây Agent
+    </p>
+  </div>
+</section>
+
+<!-- ============ SPARK FRAMEWORK ============ -->
+<section id="spark" class="spark-section">
+  <div class="container">
+    <div class="spark-title-wrap">
+      <span class="section-tag">02 / Framework</span>
+      <h2 class="section-title" style="margin: 16px auto 0;">5 thành phần của <span class="ital">SPARK</span></h2>
+      <p class="section-intro" style="margin: 16px auto 0;">
+        Mỗi Skill hoàn chỉnh phải có đủ 5 yếu tố này. Mất bất kỳ thành phần nào thì Skill sẽ không hoạt động đúng.
+      </p>
+    </div>
+
+    <div class="spark-letters">
+      <div class="letter-badge" data-l="S">S</div>
+      <div class="letter-badge" data-l="P">P</div>
+      <div class="letter-badge" data-l="A">A</div>
+      <div class="letter-badge" data-l="R">R</div>
+      <div class="letter-badge" data-l="K">K</div>
+    </div>
+
+    <div class="spark-grid">
+      <!-- S -->
+      <div class="spark-card" data-c="S">
+        <div class="spark-card-left">
+          <div class="spark-letter-big">S</div>
+          <div class="spark-name">Scope</div>
+          <div class="spark-vi">Phạm vi kích hoạt</div>
+        </div>
+        <div class="spark-card-right">
+          <h3>Skill này dùng <span class="em">khi nào?</span></h3>
+          <p>
+            Đây là yếu tố <strong>quan trọng nhất</strong> — quyết định AI có tự động dùng Skill hay không.
+            Tương ứng với trường <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">description</code> trong file SKILL.md.
+            Mô tả mơ hồ → Skill không bao giờ chạy.
+          </p>
+          <div class="spark-meta">
+            <div class="spark-meta-block">
+              <div class="lbl">Map vào SKILL.md</div>
+              <div class="val">YAML frontmatter: <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">description</code></div>
+            </div>
+            <div class="spark-meta-block">
+              <div class="lbl">Độ dài lý tưởng</div>
+              <div class="val">1-2 câu, 50-150 ký tự</div>
+            </div>
+          </div>
+          <div class="spark-example">
+            <span class="ex-lbl">Ví dụ tốt</span>
+            "Dùng khi user yêu cầu review code Python để tìm lỗi bảo mật, bug logic, hoặc vi phạm style guide PEP8. Trigger với từ khóa: review, audit, code check, security."
+          </div>
+        </div>
+      </div>
+
+      <!-- P -->
+      <div class="spark-card" data-c="P">
+        <div class="spark-card-left">
+          <div class="spark-letter-big">P</div>
+          <div class="spark-name">Persona</div>
+          <div class="spark-vi">Vai trò & đối tượng</div>
+        </div>
+        <div class="spark-card-right">
+          <h3>Ai làm? <span class="em">Cho ai?</span></h3>
+          <p>
+            Khai báo "danh tính" của AI khi chạy Skill: chuyên môn, kinh nghiệm, đối tượng phục vụ.
+            Persona càng cụ thể, output càng đúng giọng và đúng chuyên môn.
+          </p>
+          <div class="spark-meta">
+            <div class="spark-meta-block">
+              <div class="lbl">Map vào SKILL.md</div>
+              <div class="val">Phần "Role" hoặc "Context" trong markdown body</div>
+            </div>
+            <div class="spark-meta-block">
+              <div class="lbl">3 yếu tố cần</div>
+              <div class="val">Vai trò + Chuyên môn + Đối tượng</div>
+            </div>
+          </div>
+          <div class="spark-example">
+            <span class="ex-lbl">Ví dụ tốt</span>
+            "Bạn là senior security engineer 10 năm kinh nghiệm. Đối tượng review là code của junior developer Việt Nam, cần giải thích dễ hiểu kèm ví dụ sửa."
+          </div>
+        </div>
+      </div>
+
+      <!-- A -->
+      <div class="spark-card" data-c="A">
+        <div class="spark-card-left">
+          <div class="spark-letter-big">A</div>
+          <div class="spark-name">Action</div>
+          <div class="spark-vi">Quy trình từng bước</div>
+        </div>
+        <div class="spark-card-right">
+          <h3>Quy trình thực thi <span class="em">step-by-step</span></h3>
+          <p>
+            Khác với prompt cơ bản (1 yêu cầu), Skill cần <strong>nhiều bước có thứ tự</strong>.
+            Liệt kê dưới dạng numbered list. AI sẽ làm theo đúng tuần tự.
+          </p>
+          <div class="spark-meta">
+            <div class="spark-meta-block">
+              <div class="lbl">Map vào SKILL.md</div>
+              <div class="val">Phần "Instructions" hoặc "Workflow"</div>
+            </div>
+            <div class="spark-meta-block">
+              <div class="lbl">Format chuẩn</div>
+              <div class="val">Numbered list, mỗi bước 1 động từ rõ ràng</div>
+            </div>
+          </div>
+          <div class="spark-example">
+            <span class="ex-lbl">Ví dụ tốt</span>
+            "1. Đọc toàn bộ file. 2. Quét tìm SQL injection, XSS, hardcoded secrets. 3. Kiểm tra error handling. 4. Đề xuất fix kèm code mẫu. 5. Tóm tắt mức độ severity."
+          </div>
+        </div>
+      </div>
+
+      <!-- R -->
+      <div class="spark-card" data-c="R">
+        <div class="spark-card-left">
+          <div class="spark-letter-big">R</div>
+          <div class="spark-name">Rules</div>
+          <div class="spark-vi">Ràng buộc & tiêu chuẩn</div>
+        </div>
+        <div class="spark-card-right">
+          <h3>Bắt buộc làm <span class="em">/ Cấm làm</span></h3>
+          <p>
+            Tách riêng 2 loại: <strong>MUST</strong> (định dạng output, độ dài, ngôn ngữ, giọng văn)
+            và <strong>MUST NOT</strong> (cấm kỵ, sai lầm cần tránh). Đây là điểm phân biệt Skill chuyên nghiệp với prompt nghiệp dư.
+          </p>
+          <div class="spark-meta">
+            <div class="spark-meta-block">
+              <div class="lbl">Map vào SKILL.md</div>
+              <div class="val">"Constraints" + "Output format"</div>
+            </div>
+            <div class="spark-meta-block">
+              <div class="lbl">Cấu trúc</div>
+              <div class="val">DO / DON'T list rõ ràng</div>
+            </div>
+          </div>
+          <div class="spark-example">
+            <span class="ex-lbl">Ví dụ tốt</span>
+            "MUST: Output bảng Markdown, tiếng Việt, có cột Severity (low/med/high). MUST NOT: Đề xuất rewrite toàn bộ file. Không bịa lỗi không có trong code."
+          </div>
+        </div>
+      </div>
+
+      <!-- K -->
+      <div class="spark-card" data-c="K">
+        <div class="spark-card-left">
+          <div class="spark-letter-big">K</div>
+          <div class="spark-name">Knowledge</div>
+          <div class="spark-vi">Ví dụ & tài nguyên</div>
+        </div>
+        <div class="spark-card-right">
+          <h3>Đính kèm <span class="em">kiến thức nền</span></h3>
+          <p>
+            Few-shot examples (input mẫu → output mẫu) giúp AI bắt chước chính xác hơn 10 lần so với mô tả suông.
+            Có thể đính kèm file template, checklist, hoặc reference riêng.
+          </p>
+          <div class="spark-meta">
+            <div class="spark-meta-block">
+              <div class="lbl">Map vào SKILL.md</div>
+              <div class="val">"Examples" + thư mục <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">references/</code></div>
+            </div>
+            <div class="spark-meta-block">
+              <div class="lbl">Số lượng đề xuất</div>
+              <div class="val">2-3 examples đa dạng</div>
+            </div>
+          </div>
+          <div class="spark-example">
+            <span class="ex-lbl">Ví dụ tốt</span>
+            "Example 1: Input có SQL injection → Output bảng cảnh báo + code đã fix. Example 2: Input clean → Output xác nhận pass + 2 cải tiến nhỏ."
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANATOMY: SKILL.md REAL FILE ============ -->
+<section id="anatomy" class="anatomy">
+  <div class="container">
+    <span class="section-tag">03 / Cấu trúc thật</span>
+    <h2 class="section-title">File <span class="ital">SKILL.md</span> trông thế nào?</h2>
+    <p class="section-intro">
+      SPARK không phải lý thuyết suông. 5 thành phần map 1-1 vào file <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">SKILL.md</code> chuẩn theo agentskills.io
+      — chạy được trên Antigravity, Claude Code, Cursor, Codex CLI.
+    </p>
+
+    <div class="anatomy-grid">
+      <div class="anatomy-text">
+        <h3>Một Skill = <span class="em">1 folder + 1 file</span></h3>
+        <p>
+          Cấu trúc tối thiểu chỉ cần <strong>1 thư mục</strong> tên kebab-case (ví dụ: <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">code-reviewer/</code>) chứa <strong>1 file</strong> tên <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">SKILL.md</code>.
+        </p>
+        <p>File gồm 2 phần:</p>
+        <ul>
+          <li><strong>YAML frontmatter</strong> giữa hai dấu <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">---</code> — chứa <code style="color: var(--accent-3); font-family: 'JetBrains Mono', monospace;">name</code> và <code style="color: var(--accent-3); font-family: 'JetBrains Mono', monospace;">description</code> (bắt buộc)</li>
+          <li><strong>Markdown body</strong> — chứa Persona, Action, Rules, Knowledge</li>
+        </ul>
+        <p>
+          Đặt vào 1 trong 2 vị trí:
+        </p>
+        <ul>
+          <li><strong>Global:</strong> <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">~/.gemini/antigravity/skills/</code> — dùng cho mọi project</li>
+          <li><strong>Workspace:</strong> <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">.agent/skills/</code> — chỉ cho project hiện tại</li>
+        </ul>
+      </div>
+
+      <div class="file-preview">
+        <div class="file-header">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span class="filename">code-reviewer/SKILL.md</span>
+        </div>
+        <pre class="file-content"><span class="frontmatter">---</span>
+<span class="key">name</span>: <span class="val">code-reviewer</span>
+<span class="key">description</span>: <span class="val">Review code Python tìm lỗi
+  bảo mật, bug logic, vi phạm PEP8.
+  Dùng khi user nói "review", "audit",
+  "check code".</span>
+<span class="frontmatter">---</span>
+
+<span class="heading"># Code Reviewer Skill</span>
+
+<span class="heading">## Persona</span>
+Bạn là senior security engineer
+10 năm kinh nghiệm Python.
+
+<span class="heading">## Workflow</span>
+1. Đọc toàn bộ file
+2. Quét SQL injection, XSS, secrets
+3. Kiểm tra error handling
+4. Đề xuất fix kèm ví dụ
+5. Tóm tắt severity
+
+<span class="heading">## Rules</span>
+<span class="comment"># MUST</span>
+- Output bảng Markdown
+- Tiếng Việt
+- Có cột Severity
+
+<span class="comment"># MUST NOT</span>
+- Không rewrite toàn bộ file
+- Không bịa lỗi
+
+<span class="heading">## Examples</span>
+[xem references/examples.md]
+</pre>
+      </div>
+    </div>
+
+    <!-- Description deep dive -->
+    <div class="desc-deep">
+      <h4>⚠ Trường <span class="em">description</span> quyết định tất cả</h4>
+      <p>
+        Đây là điểm 90% người mới làm sai. AI <strong>chỉ load Skill khi description khớp</strong> với yêu cầu của user.
+        Description tệ → Skill nằm im mãi mãi. Hãy so sánh:
+      </p>
+      <div class="desc-compare">
+        <div class="desc-bad" data-label="✗ Sai — quá mơ hồ">
+          <code>description: "Giúp về code"</code>
+          <p>AI không biết khi nào nên dùng. Có thể không bao giờ kích hoạt, hoặc kích hoạt sai lúc.</p>
+        </div>
+        <div class="desc-good" data-label="✓ Đúng — cụ thể">
+          <code>description: "Review code Python tìm lỗi bảo mật, bug logic, vi phạm PEP8. Dùng khi user nói 'review', 'audit', 'check code'."</code>
+          <p>Có động từ rõ + đối tượng cụ thể (Python) + trigger keywords. AI biết chính xác khi nào load.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERACTIVE BUILDER ============ -->
+<section id="builder" class="builder-section">
+  <div class="container">
+    <span class="section-tag">04 / Thực hành</span>
+    <h2 class="section-title">Live <span class="ital">SKILL.md</span> builder</h2>
+    <p class="section-intro">
+      Điền form bên trái. File SKILL.md được generate real-time bên phải. Copy về dùng ngay.
+    </p>
+
+    <div class="builder-shell">
+      <div class="builder-tabs">
+        <button class="tab active" data-tab="form">FORM_INPUT</button>
+        <button class="tab" data-tab="preview">FILE_PREVIEW</button>
+      </div>
+
+      <div class="builder-body">
+        <div class="builder-form">
+          <div class="form-block" data-c="S">
+            <label><span class="pill">S</span> Skill name (kebab-case)</label>
+            <div class="hint">Tên folder + tên skill. Chữ thường, gạch ngang.</div>
+            <input type="text" id="b-name" placeholder="vd: email-apologizer" />
+          </div>
+
+          <div class="form-block" data-c="S">
+            <label><span class="pill">S</span> Description (trigger)</label>
+            <div class="hint">Câu này quyết định khi nào skill kích hoạt. Càng cụ thể càng tốt.</div>
+            <textarea id="b-desc" placeholder="vd: Soạn email xin lỗi khách hàng khi shop giao hàng trễ. Dùng khi user nói 'viết email xin lỗi', 'apologize', kèm thông tin đơn hàng."></textarea>
+          </div>
+
+          <div class="form-block" data-c="P">
+            <label><span class="pill">P</span> Persona</label>
+            <div class="hint">Vai trò + chuyên môn + đối tượng phục vụ.</div>
+            <textarea id="b-persona" placeholder="vd: Bạn là CSKH 5 năm kinh nghiệm tại shop thời trang online, viết email cho khách Việt Nam 22-35 tuổi."></textarea>
+          </div>
+
+          <div class="form-block" data-c="A">
+            <label><span class="pill">A</span> Workflow (mỗi dòng 1 bước)</label>
+            <div class="hint">Liệt kê từng bước. Mỗi dòng bắt đầu bằng động từ.</div>
+            <textarea id="b-action" placeholder="Phân tích lý do trễ&#10;Mở đầu bằng câu xin lỗi chân thành&#10;Giải thích nguyên nhân ngắn gọn&#10;Đề xuất giải pháp + voucher&#10;Kết thúc bằng cam kết"></textarea>
+          </div>
+
+          <div class="form-block" data-c="R">
+            <label><span class="pill">R</span> MUST (bắt buộc)</label>
+            <div class="hint">Mỗi dòng 1 ràng buộc về định dạng/giọng/độ dài.</div>
+            <textarea id="b-must" placeholder="80-120 từ&#10;Tiếng Việt, xưng hô 'shop'&#10;Giọng chân thành, không sáo rỗng&#10;Có chữ ký mặc định"></textarea>
+          </div>
+
+          <div class="form-block" data-c="R">
+            <label><span class="pill">R</span> MUST NOT (cấm)</label>
+            <div class="hint">Mỗi dòng 1 điều cấm kỵ.</div>
+            <textarea id="b-mustnot" placeholder="Không hứa hẹn cụ thể nếu chưa được duyệt&#10;Không đổ lỗi cho bên thứ 3&#10;Không dùng tiếng Anh"></textarea>
+          </div>
+
+          <div class="form-block" data-c="K">
+            <label><span class="pill">K</span> Example (input → output mẫu)</label>
+            <div class="hint">Tùy chọn nhưng rất nên có. Giúp AI bắt chước đúng giọng.</div>
+            <textarea id="b-example" placeholder="Input: Đơn #1234, trễ 3 ngày, lý do bão&#10;Output: 'Shop xin lỗi anh/chị vì đơn #1234 đã đến trễ 3 ngày...'"></textarea>
+          </div>
+        </div>
+
+        <div class="builder-preview">
+          <div class="preview-header">
+            <span class="filename" id="b-filename">skill-name/SKILL.md</span>
+            <button class="copy-btn" onclick="copyBuilder()">📋 Copy</button>
+          </div>
+          <div class="preview-content-wrap" id="b-preview">
+            <span class="preview-empty">Điền form bên trái để xem file SKILL.md được sinh ra...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ / FULL FLOW ============ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-tag">05 / Tự xây từ A→Z</span>
+    <h2 class="section-title">Hành trình <span class="ital">tạo Skill đầu tiên</span></h2>
+    <p class="section-intro">
+      6 bước có guide chi tiết. Cuối cùng bạn có file SKILL.md hoàn chỉnh + hướng dẫn cài đặt.
+    </p>
+
+    <div class="quiz-shell">
+      <div class="quiz-progress" id="qprogress">
+        <div class="qp-step active"><span class="num">01</span>SCOPE</div>
+        <div class="qp-step"><span class="num">02</span>SCOPE+</div>
+        <div class="qp-step"><span class="num">03</span>PERSONA</div>
+        <div class="qp-step"><span class="num">04</span>ACTION</div>
+        <div class="qp-step"><span class="num">05</span>RULES</div>
+        <div class="qp-step"><span class="num">06</span>KNOW</div>
+      </div>
+
+      <div class="quiz-step-body">
+        <!-- Step 1 -->
+        <div class="qstep active" data-step="1">
+          <span class="step-tag">BƯỚC 01 / 06 — ĐẶT TÊN</span>
+          <h3>Skill này tên là <span class="em">gì?</span></h3>
+          <div class="why">
+            <strong>Vì sao quan trọng:</strong> Tên kebab-case sẽ là cả tên folder lẫn trường <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">name</code> trong YAML. Sai chuẩn naming → Antigravity không load.
+          </div>
+          <input type="text" id="q-name" placeholder="vd: email-apologizer, sql-optimizer, blog-summarizer" />
+          <div class="examples">
+            <strong>Theo nghề</strong>
+            <ul>
+              <li>Dev: code-reviewer / pr-description-writer / test-generator</li>
+              <li>Marketing: facebook-caption / seo-blog-writer / cold-email</li>
+              <li>HR: jd-writer / interview-question-gen / candidate-screener</li>
+              <li>Sales: follow-up-email / proposal-drafter / objection-handler</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="qstep" data-step="2">
+          <span class="step-tag">BƯỚC 02 / 06 — SCOPE (description)</span>
+          <h3>Skill kích hoạt <span class="em">khi nào?</span></h3>
+          <div class="why">
+            <strong>Vì sao quan trọng:</strong> Đây là trường <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">description</code> — quyết định AI có tự động dùng Skill hay không.
+            Mô tả mơ hồ là sai lầm #1 khiến Skill không bao giờ chạy.
+          </div>
+          <textarea id="q-desc" placeholder="vd: Soạn email xin lỗi khách hàng khi shop giao hàng trễ. Dùng khi user yêu cầu 'viết email xin lỗi', 'apologize', kèm số đơn hàng và lý do."></textarea>
+          <div class="examples">
+            <strong>Công thức description tốt</strong>
+            <ul>
+              <li>[Việc cụ thể] + [Đối tượng] + "Dùng khi..." + [trigger keywords]</li>
+              <li>Tránh: "Giúp về X", "Hỗ trợ Y", "Làm Z dễ dàng hơn"</li>
+              <li>Nên có 2-3 keyword cụ thể user thường dùng</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="qstep" data-step="3">
+          <span class="step-tag">BƯỚC 03 / 06 — PERSONA</span>
+          <h3>AI đóng vai <span class="em">ai?</span></h3>
+          <div class="why">
+            <strong>Vì sao quan trọng:</strong> Persona càng cụ thể (vai trò + chuyên môn + đối tượng) thì giọng văn và độ chính xác càng cao.
+          </div>
+          <textarea id="q-persona" placeholder="vd: Bạn là CSKH 5 năm kinh nghiệm tại shop thời trang online tại Việt Nam, chuyên giải quyết khiếu nại với giọng chân thành và chuyên nghiệp."></textarea>
+          <div class="examples">
+            <strong>3 yếu tố cần có</strong>
+            <ul>
+              <li>Vai trò: "Bạn là [chức danh + năm kinh nghiệm]"</li>
+              <li>Chuyên môn: "Chuyên về [domain cụ thể]"</li>
+              <li>Đối tượng: "Phục vụ [ai], tại [đâu/môi trường nào]"</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="qstep" data-step="4">
+          <span class="step-tag">BƯỚC 04 / 06 — ACTION (workflow)</span>
+          <h3>Quy trình từng bước <span class="em">là gì?</span></h3>
+          <div class="why">
+            <strong>Vì sao quan trọng:</strong> Skill khác Prompt ở chỗ có <strong>nhiều bước có thứ tự</strong>.
+            Mỗi dòng 1 bước, bắt đầu bằng động từ. AI sẽ làm theo đúng tuần tự.
+          </div>
+          <textarea id="q-action" placeholder="Mỗi dòng 1 bước:&#10;Phân tích lý do và mức độ ảnh hưởng&#10;Mở email bằng câu xin lỗi chân thành&#10;Giải thích ngắn gọn nguyên nhân&#10;Đề xuất giải pháp cụ thể (voucher/giảm giá)&#10;Kết thúc bằng cam kết cải thiện"></textarea>
+          <div class="examples">
+            <strong>Động từ thường dùng</strong>
+            <ul>
+              <li>Phân tích / Đọc / Quét / Kiểm tra / Xác định</li>
+              <li>Tạo / Viết / Soạn / Generate / Draft</li>
+              <li>So sánh / Đánh giá / Đề xuất / Tóm tắt</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="qstep" data-step="5">
+          <span class="step-tag">BƯỚC 05 / 06 — RULES (MUST / MUST NOT)</span>
+          <h3>Bắt buộc & <span class="em">cấm kỵ</span></h3>
+          <div class="why">
+            <strong>Vì sao quan trọng:</strong> MUST đảm bảo output đúng định dạng. MUST NOT ngăn AI mắc sai lầm phổ biến.
+            Tách 2 list rõ ràng để AI dễ tuân theo.
+          </div>
+          <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-2); display: block; margin-bottom: 4px; letter-spacing: 0.1em;">MUST (mỗi dòng 1 quy tắc)</label>
+          <textarea id="q-must" placeholder="80-120 từ&#10;Tiếng Việt, xưng 'shop'&#10;Có chữ ký 'Đội ngũ CSKH - Tên Shop'"></textarea>
+          <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-3); display: block; margin: 14px 0 4px; letter-spacing: 0.1em;">MUST NOT (mỗi dòng 1 điều cấm)</label>
+          <textarea id="q-mustnot" placeholder="Không hứa hẹn nếu chưa được duyệt&#10;Không đổ lỗi cho bên giao hàng&#10;Không dùng tiếng Anh"></textarea>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="qstep" data-step="6">
+          <span class="step-tag">BƯỚC 06 / 06 — KNOWLEDGE</span>
+          <h3>Đính kèm <span class="em">ví dụ</span> (tùy chọn)</h3>
+          <div class="why">
+            <strong>Vì sao quan trọng:</strong> Few-shot example giúp AI bắt chước chính xác hơn 10 lần so với mô tả.
+            1 example tốt > 10 dòng instruction.
+          </div>
+          <textarea id="q-example" placeholder="Input: Đơn #1234, trễ 3 ngày, lý do bão miền Trung&#10;Output: &#10;'Shop chân thành xin lỗi anh/chị vì đơn #1234 đã đến trễ 3 ngày so với dự kiến. Do ảnh hưởng của bão, vận chuyển đến khu vực miền Trung bị gián đoạn...'" style="min-height: 140px;"></textarea>
+          <div class="examples">
+            <strong>Tip viết example tốt</strong>
+            <ul>
+              <li>Input cụ thể, có dữ liệu giả lập thực tế</li>
+              <li>Output mẫu thể hiện đúng giọng + định dạng mong muốn</li>
+              <li>Có thể skip bước này — nhưng có example sẽ tốt hơn nhiều</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="qnav" id="qnav">
+          <button id="qprev" disabled onclick="qprev()">← Quay lại</button>
+          <button id="qnext" class="next" onclick="qnext()">Tiếp theo →</button>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="qresult" id="qresult">
+        <span class="step-tag">✓ HOÀN THÀNH</span>
+        <h3>SKILL.md của bạn đây 🎉</h3>
+        <p>
+          Copy file dưới và làm theo hướng dẫn cài đặt để Skill tự động chạy trong Antigravity / Claude Code / Cursor.
+        </p>
+
+        <div class="result-file">
+          <div class="result-file-header">
+            <span id="r-filename">skill-name/SKILL.md</span>
+          <button class="copy-btn" onclick="copyResult()">📋 Copy File Skill.md</button>
+          </div>
+          <div class="result-file-content" id="r-content"></div>
+        </div>
+
+        <div class="install-steps">
+          <h4>📦 Cách cài đặt vào Antigravity</h4>
+          <ol>
+            <li>Tạo folder với tên Skill: <code id="r-folder">~/.gemini/antigravity/skills/skill-name/</code></li>
+            <li>Tạo file <code>SKILL.md</code> bên trong folder đó</li>
+            <li>Paste nội dung đã copy ở trên</li>
+            <li>Restart Antigravity (Skill được scan khi khởi động)</li>
+            <li>Test bằng cách chat một yêu cầu khớp với <code>description</code></li>
+          </ol>
+          <p style="margin-top: 14px; color: var(--text-faint); font-size: 12.5px; font-family: 'JetBrains Mono', monospace;">
+            // Hoạt động tương tự với Claude Code (<code>~/.claude/skills/</code>) và Cursor (<code>.cursor/skills/</code>)
+          </p>
+        </div>
+
+        <div class="install-steps">
+          <h4>🔧 Khi nào nên chỉnh sửa Skill</h4>
+          <ol>
+            <li>Skill <strong>không tự kích hoạt</strong> → sửa <code>description</code> cụ thể hơn</li>
+            <li>Output <strong>sai giọng</strong> → bổ sung Persona</li>
+            <li>Output <strong>thiếu bước</strong> → thêm vào Workflow</li>
+            <li>AI <strong>làm sai chỗ nào đó liên tục</strong> → thêm vào MUST NOT</li>
+            <li>Output <strong>không đúng format</strong> → thêm Example</li>
+          </ol>
+        </div>
+
+        <div class="qnav" style="border-top: none; padding-top: 0;">
+          <button onclick="qrestart()">↻ Tạo Skill khác</button>
+          <button class="next" onclick="copyResult()">📋 Copy File Skill.md</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gate-modal" id="copyGate" aria-hidden="true">
+  <div class="gate-modal__panel" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+    <button class="gate-modal__close" type="button" aria-label="Đóng" onclick="closeCopyGate()">×</button>
+    <div class="gate-modal__eyebrow">Thông tin để gửi Mail</div>
+    <h3 class="gate-modal__title" id="gateTitle">Điền thông tin để nhận file Skill</h3>
+    <p class="gate-modal__copy">
+      Họ và tên, ID nhân viên và email ghn sẽ được dùng để gửi file mẫu Skill.md qua mail, đồng thời lưu vào Google Sheet ở tab <strong>SPARK</strong>.
+    </p>
+    <form class="gate-form" id="copyGateForm">
+      <div class="gate-field">
+        <label for="gateName">Họ và Tên</label>
+        <input id="gateName" type="text" autocomplete="name" />
+      </div>
+      <div class="gate-field">
+        <label for="gateId">ID nhân viên</label>
+        <input id="gateId" type="text" autocomplete="off" />
+      </div>
+      <div class="gate-field">
+        <label for="gateEmail">Email ghn</label>
+        <input id="gateEmail" type="email" autocomplete="email" />
+      </div>
+      <div class="gate-note">Nếu chưa điền đủ, hệ thống sẽ không cho copy file.</div>
+      <div class="gate-error" id="gateError"></div>
+      <div class="gate-actions">
+        <button type="button" onclick="closeCopyGate()">Hủy</button>
+        <button type="submit" class="primary" id="gateSubmitBtn">Gửi thông tin & Copy File Skill.md</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="gate-toast" id="gateToast" role="status" aria-live="polite"></div>
+
+<footer>
+  <div class="container">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      SPARK<span>.system</span>
+    </div>
+    <p>FRAMEWORK FOR BUILDING REUSABLE AI SKILLS · v1.0</p>
+    <div class="bridge">
+      Mới bắt đầu? Hãy đi qua trang <a href="1.html">CAO Method</a> để học prompting cơ bản trước →
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ============ HELPERS ============
+  const SHEET_WEB_APP_URL = window.SHEET_WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbxL5JwStFHos0S85uZ9dGqi1K-bhSLEI1qswCjrkpFCzesXFkuJ0mm2Qo34hz1JN7xl6A/exec';
+  const COPY_CONTEXT = {
+    tab: 'SPARK',
+    skillLabel: 'SPARK'
+  };
+  let currentSkillPlain = '';
+  let gateOpen = false;
+
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function kebab(s) {
+    return s.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'my-skill';
+  }
+  function linesToList(s, prefix='- ') {
+    if (!s.trim()) return '';
+    return s.split('\n').map(l => l.trim()).filter(Boolean).map(l => prefix + l).join('\n');
+  }
+
+  // ============ BUILDER ============
+  const bInputs = ['b-name','b-desc','b-persona','b-action','b-must','b-mustnot','b-example'];
+  bInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateBuilder);
+  });
+
+  function buildSkillMd(name, desc, persona, action, must, mustnot, example) {
+    const slug = kebab(name);
+    let md = '';
+    md += '<span class="fm">---</span>\n';
+    md += '<span class="k">name</span>: <span class="v">' + escHtml(slug) + '</span>\n';
+    md += '<span class="k">description</span>: <span class="v">' + escHtml(desc || '(điền description ở form bên trái)') + '</span>\n';
+    md += '<span class="fm">---</span>\n\n';
+    md += '<span class="h"># ' + escHtml(name || 'My Skill') + '</span>\n\n';
+
+    if (persona.trim()) {
+      md += '<span class="h">## Persona</span>\n';
+      md += escHtml(persona) + '\n\n';
+    }
+
+    if (action.trim()) {
+      md += '<span class="h">## Workflow</span>\n';
+      md += escHtml(action.split('\n').map(l => l.trim()).filter(Boolean)
+        .map((l, i) => (i+1) + '. ' + l).join('\n')) + '\n\n';
+    }
+
+    if (must.trim() || mustnot.trim()) {
+      md += '<span class="h">## Rules</span>\n';
+      if (must.trim()) {
+        md += '\n<span class="h">### MUST</span>\n';
+        md += escHtml(linesToList(must)) + '\n';
+      }
+      if (mustnot.trim()) {
+        md += '\n<span class="h">### MUST NOT</span>\n';
+        md += escHtml(linesToList(mustnot)) + '\n';
+      }
+      md += '\n';
+    }
+
+    if (example.trim()) {
+      md += '<span class="h">## Example</span>\n';
+      md += escHtml(example) + '\n';
+    }
+
+    return { html: md, slug: slug };
+  }
+
+  function buildSkillMdPlain(name, desc, persona, action, must, mustnot, example) {
+    const slug = kebab(name);
+    let md = '';
+    md += '---\n';
+    md += 'name: ' + slug + '\n';
+    md += 'description: ' + (desc || '(điền description)') + '\n';
+    md += '---\n\n';
+    md += '# ' + (name || 'My Skill') + '\n\n';
+
+    if (persona.trim()) {
+      md += '## Persona\n' + persona + '\n\n';
+    }
+    if (action.trim()) {
+      md += '## Workflow\n';
+      md += action.split('\n').map(l => l.trim()).filter(Boolean)
+        .map((l, i) => (i+1) + '. ' + l).join('\n') + '\n\n';
+    }
+    if (must.trim() || mustnot.trim()) {
+      md += '## Rules\n';
+      if (must.trim()) {
+        md += '\n### MUST\n' + linesToList(must) + '\n';
+      }
+      if (mustnot.trim()) {
+        md += '\n### MUST NOT\n' + linesToList(mustnot) + '\n';
+      }
+      md += '\n';
+    }
+    if (example.trim()) {
+      md += '## Example\n' + example + '\n';
+    }
+    return { plain: md, slug: slug };
+  }
+
+  function updateBuilder() {
+    const name = document.getElementById('b-name').value.trim();
+    const desc = document.getElementById('b-desc').value.trim();
+    const persona = document.getElementById('b-persona').value.trim();
+    const action = document.getElementById('b-action').value.trim();
+    const must = document.getElementById('b-must').value.trim();
+    const mustnot = document.getElementById('b-mustnot').value.trim();
+    const example = document.getElementById('b-example').value.trim();
+
+    if (!name && !desc && !persona && !action && !must && !mustnot && !example) {
+      document.getElementById('b-preview').innerHTML = '<span class="preview-empty">Điền form bên trái để xem file SKILL.md được sinh ra...</span>';
+      document.getElementById('b-filename').textContent = 'skill-name/SKILL.md';
+      return;
+    }
+
+    const { html, slug } = buildSkillMd(name, desc, persona, action, must, mustnot, example);
+    document.getElementById('b-preview').innerHTML = html;
+    document.getElementById('b-filename').textContent = slug + '/SKILL.md';
+  }
+
+  function copyBuilder() {
+    const name = document.getElementById('b-name').value.trim();
+    const desc = document.getElementById('b-desc').value.trim();
+    const persona = document.getElementById('b-persona').value.trim();
+    const action = document.getElementById('b-action').value.trim();
+    const must = document.getElementById('b-must').value.trim();
+    const mustnot = document.getElementById('b-mustnot').value.trim();
+    const example = document.getElementById('b-example').value.trim();
+
+    const { plain } = buildSkillMdPlain(name, desc, persona, action, must, mustnot, example);
+    navigator.clipboard.writeText(plain).then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => btn.textContent = orig, 2000);
+    });
+  }
+
+  // Tabs (mobile)
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', (e) => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const target = t.dataset.tab;
+      const form = document.querySelector('.builder-form');
+      const preview = document.querySelector('.builder-preview');
+      if (window.innerWidth < 900) {
+        form.style.display = (target === 'form') ? 'block' : 'none';
+        preview.style.display = (target === 'preview') ? 'block' : 'none';
+      }
+    });
+  });
+
+  // ============ QUIZ ============
+  let qStep = 1;
+  const qTotal = 6;
+
+  function qshow(n) {
+    document.querySelectorAll('.qstep').forEach(s => s.classList.remove('active'));
+    const step = document.querySelector(`.qstep[data-step="${n}"]`);
+    if (step) step.classList.add('active');
+
+    document.querySelectorAll('#qprogress .qp-step').forEach((d, i) => {
+      d.classList.remove('active', 'done');
+      if (i + 1 < n) d.classList.add('done');
+      if (i + 1 === n) d.classList.add('active');
+    });
+
+    document.getElementById('qprev').disabled = (n === 1);
+    document.getElementById('qnext').textContent = (n === qTotal) ? 'Tạo Skill ✓' : 'Tiếp theo →';
+  }
+
+  function qnext() {
+    const required = ['q-name','q-desc','q-persona','q-action'];
+    if (qStep <= 4) {
+      const id = required[qStep - 1];
+      const el = document.getElementById(id);
+      if (!el.value.trim()) {
+        el.focus();
+        el.style.borderColor = 'var(--accent-3)';
+        setTimeout(() => el.style.borderColor = '', 1500);
+        return;
+      }
+    }
+    if (qStep < qTotal) {
+      qStep++;
+      qshow(qStep);
+    } else {
+      qshowResult();
+    }
+  }
+
+  function qprev() {
+    if (qStep > 1) { qStep--; qshow(qStep); }
+  }
+
+  function qshowResult() {
+    document.querySelectorAll('.qstep').forEach(s => s.classList.remove('active'));
+    document.getElementById('qnav').style.display = 'none';
+    document.getElementById('qresult').classList.add('active');
+    document.querySelector('.quiz-step-body').style.display = 'none';
+
+    document.querySelectorAll('#qprogress .qp-step').forEach(d => d.classList.add('done'));
+
+    const name = document.getElementById('q-name').value.trim();
+    const desc = document.getElementById('q-desc').value.trim();
+    const persona = document.getElementById('q-persona').value.trim();
+    const action = document.getElementById('q-action').value.trim();
+    const must = document.getElementById('q-must').value.trim();
+    const mustnot = document.getElementById('q-mustnot').value.trim();
+    const example = document.getElementById('q-example').value.trim();
+
+    const { html, slug } = buildSkillMd(name, desc, persona, action, must, mustnot, example);
+    document.getElementById('r-content').innerHTML = html;
+    document.getElementById('r-filename').textContent = slug + '/SKILL.md';
+    document.getElementById('r-folder').textContent = '~/.gemini/antigravity/skills/' + slug + '/';
+    currentSkillPlain = buildSkillMdPlain(name, desc, persona, action, must, mustnot, example).plain;
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('gateToast');
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
+  }
+
+  function openCopyGate() {
+    if (!currentSkillPlain) {
+      showToast('Hãy tạo xong file Skill trước rồi mới copy nhé.');
+      return;
+    }
+    gateOpen = true;
+    document.getElementById('copyGate').classList.add('is-open');
+    document.getElementById('copyGate').setAttribute('aria-hidden', 'false');
+    document.getElementById('gateError').textContent = '';
+    document.getElementById('gateName').focus();
+  }
+
+  function closeCopyGate() {
+    gateOpen = false;
+    document.getElementById('copyGate').classList.remove('is-open');
+    document.getElementById('copyGate').setAttribute('aria-hidden', 'true');
+  }
+
+  function validateGateForm() {
+    const name = document.getElementById('gateName').value.trim();
+    const empId = document.getElementById('gateId').value.trim();
+    const email = document.getElementById('gateEmail').value.trim();
+    const error = document.getElementById('gateError');
+    if (!name || !empId || !email) {
+      error.textContent = 'Vui lòng điền đầy đủ Họ và Tên, ID nhân viên và Email ghn.';
+      return null;
+    }
+    error.textContent = '';
+    return { name, empId, email };
+  }
+
+  async function postToSheet(payload) {
+    if (!SHEET_WEB_APP_URL || SHEET_WEB_APP_URL.includes('PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
+      throw new Error('Chưa cấu hình URL Apps Script để gửi Google Sheet.');
+    }
+    await fetch(SHEET_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async function copyCurrentSkill(button) {
+    if (!currentSkillPlain) return;
+    await navigator.clipboard.writeText(currentSkillPlain);
+    const original = button.textContent;
+    button.textContent = '✓ Đã gửi & copied';
+    setTimeout(() => { button.textContent = original; }, 2000);
+  }
+
+  async function submitCopyGate(event) {
+    event.preventDefault();
+    const data = validateGateForm();
+    if (!data) return;
+
+    const submitBtn = document.getElementById('gateSubmitBtn');
+    submitBtn.disabled = true;
+    const original = submitBtn.textContent;
+    submitBtn.textContent = 'Đang gửi...';
+
+    try {
+      let sheetSent = true;
+      try {
+        await postToSheet({
+          ...data,
+          sheet: COPY_CONTEXT.tab,
+          skill: COPY_CONTEXT.skillLabel,
+          skillText: currentSkillPlain,
+          page: '2.html',
+          timestamp: new Date().toISOString(),
+        });
+      } catch (err) {
+        sheetSent = false;
+        showToast(err.message || 'Chưa gửi được lên Google Sheet.');
+      }
+      await copyCurrentSkill(submitBtn);
+      showToast(sheetSent ? 'Đã gửi thông tin và copy file Skill vào clipboard.' : 'Đã copy file Skill, nhưng Google Sheet chưa được cấu hình endpoint.');
+      closeCopyGate();
+    } catch (err) {
+      document.getElementById('gateError').textContent = err.message || 'Không gửi được dữ liệu.';
+      showToast('Chưa gửi được lên Google Sheet.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = original;
+    }
+  }
+
+  function copyResult() {
+    openCopyGate();
+  }
+
+  function qrestart() {
+    qStep = 1;
+    ['q-name','q-desc','q-persona','q-action','q-must','q-mustnot','q-example']
+      .forEach(id => document.getElementById(id).value = '');
+    currentSkillPlain = '';
+    document.getElementById('qresult').classList.remove('active');
+    document.querySelector('.quiz-step-body').style.display = 'block';
+    document.getElementById('qnav').style.display = 'flex';
+    qshow(1);
+    document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  document.getElementById('copyGateForm').addEventListener('submit', submitCopyGate);
+  document.getElementById('copyGate').addEventListener('click', (e) => {
+    if (e.target.id === 'copyGate') closeCopyGate();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && gateOpen) closeCopyGate();
+  });
+
+  // ============ SCROLL REVEAL ============
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.rung, .spark-card, .anatomy-text, .file-preview, .desc-deep').forEach(el => {
+    el.classList.add('reveal');
+    obs.observe(el);
+  });
+</script>
+
+</body>
+</html>

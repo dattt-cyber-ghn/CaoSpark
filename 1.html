@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CAO Method — Học cách viết Prompt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f4ead5;
+    --cream-deep: #ead9b3;
+    --ink: #1a1410;
+    --ink-soft: #3d2f24;
+    --paper: #fbf6e9;
+    --accent: #d4502a;       /* terracotta đỏ cam */
+    --accent-2: #2d5f3f;     /* xanh lá rêu */
+    --accent-3: #c9a227;     /* vàng mù tạt */
+    --accent-4: #4a3aff;     /* xanh tím sách */
+    --grid: rgba(26, 20, 16, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.55;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(212, 80, 42, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(74, 58, 255, 0.05) 0%, transparent 50%);
+  }
+
+  /* Texture noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.08;
+    mix-blend-mode: multiply;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ============ NAV ============ */
+  nav {
+    position: sticky;
+    top: 0;
+    background: var(--cream);
+    border-bottom: 1.5px solid var(--ink);
+    z-index: 100;
+    padding: 14px 0;
+  }
+  nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); font-style: italic; }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; font-weight: 500; }
+  .nav-links a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1.5px solid transparent;
+    padding-bottom: 2px;
+    transition: border-color 0.2s;
+  }
+  .nav-links a:hover { border-color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    padding: 80px 0 60px;
+    position: relative;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 6px 14px;
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(48px, 8vw, 110px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin-bottom: 32px;
+  }
+  .hero h1 .ital { font-style: italic; font-weight: 400; color: var(--accent); }
+  .hero h1 .underline {
+    text-decoration: underline;
+    text-decoration-color: var(--accent-3);
+    text-decoration-thickness: 8px;
+    text-underline-offset: 8px;
+  }
+  .hero-sub {
+    font-size: 20px;
+    max-width: 600px;
+    color: var(--ink-soft);
+    margin-bottom: 40px;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent);
+    color: var(--paper);
+    padding: 16px 28px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .hero-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .page-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 4px 10px;
+    border-bottom: none;
+    text-decoration: none;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+  .nav-links a.page-switch,
+  .nav-links a.page-switch:hover { color: var(--cream); }
+
+  /* Decorative shapes */
+  .shape {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .shape-1 {
+    top: 100px;
+    right: 5%;
+    width: 140px;
+    height: 140px;
+    background: var(--accent-3);
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: float 8s ease-in-out infinite;
+  }
+  .shape-2 {
+    bottom: 60px;
+    right: 20%;
+    width: 80px;
+    height: 80px;
+    background: var(--accent-4);
+    transform: rotate(45deg);
+    opacity: 0.3;
+    animation: float 6s ease-in-out infinite reverse;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(15deg); }
+  }
+  .shape-2 { animation-name: float2; }
+  @keyframes float2 {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(60deg) translateY(-15px); }
+  }
+
+  /* ============ SECTION HEADERS ============ */
+  section { padding: 80px 0; position: relative; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    max-width: 800px;
+  }
+  .section-title .ital { font-style: italic; color: var(--accent); }
+  .section-intro {
+    font-size: 18px;
+    max-width: 700px;
+    color: var(--ink-soft);
+    margin-bottom: 50px;
+  }
+
+  /* ============ THE STORY (intro) ============ */
+  .story {
+    background: var(--paper);
+    border-top: 1.5px solid var(--ink);
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .story-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  @media (max-width: 768px) { .story-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+  .story-bad, .story-good {
+    border: 1.5px solid var(--ink);
+    padding: 28px;
+    background: var(--cream);
+    position: relative;
+  }
+  .story-label {
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 4px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .story-good .story-label { background: var(--accent-2); }
+  .story-bad .story-label { background: var(--accent); }
+  .story-prompt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    background: var(--cream-deep);
+    padding: 14px;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--ink);
+  }
+  .story-result {
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .story-result strong { color: var(--ink); font-style: normal; }
+
+  /* ============ CAO CARDS ============ */
+  .cao-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 50px;
+  }
+  @media (max-width: 900px) { .cao-grid { grid-template-columns: 1fr; } }
+
+  .cao-card {
+    border: 1.5px solid var(--ink);
+    padding: 32px;
+    background: var(--paper);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+  }
+  .cao-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8px;
+    background: var(--card-color);
+  }
+  .cao-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .cao-card[data-cao="C"] { --card-color: var(--accent); }
+  .cao-card[data-cao="A"] { --card-color: var(--accent-2); }
+  .cao-card[data-cao="O"] { --card-color: var(--accent-4); }
+
+  .cao-letter {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 90px;
+    line-height: 1;
+    color: var(--card-color);
+    margin-bottom: 8px;
+  }
+  .cao-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  .cao-meaning {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .cao-desc { font-size: 15px; color: var(--ink-soft); margin-bottom: 20px; }
+  .cao-example {
+    background: var(--cream-deep);
+    padding: 14px;
+    font-size: 13px;
+    border-left: 3px solid var(--card-color);
+  }
+  .cao-example strong { display: block; margin-bottom: 6px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ============ ANALOGY ============ */
+  .analogy-section {
+    background: var(--ink);
+    color: var(--cream);
+    border-top: 1.5px solid var(--ink);
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .analogy-section .section-title { color: var(--cream); }
+  .analogy-section .section-num { color: var(--accent-3); }
+  .analogy-section .section-intro { color: var(--cream-deep); }
+
+  .restaurant {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 40px;
+    border: 1.5px solid var(--cream);
+  }
+  @media (max-width: 768px) { .restaurant { grid-template-columns: 1fr; } }
+
+  .rest-step {
+    padding: 32px;
+    border-right: 1.5px solid var(--cream);
+    position: relative;
+  }
+  .rest-step:last-child { border-right: none; }
+  @media (max-width: 768px) {
+    .rest-step { border-right: none; border-bottom: 1.5px solid var(--cream); }
+    .rest-step:last-child { border-bottom: none; }
+  }
+
+  .rest-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .rest-step h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .rest-step h4 .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--accent-3);
+    color: var(--ink);
+    padding: 2px 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .rest-step p { font-size: 14px; color: var(--cream-deep); }
+
+  /* ============ INTERACTIVE BUILDER ============ */
+  .builder {
+    background: var(--paper);
+    border-top: 1.5px solid var(--ink);
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .builder-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 40px;
+  }
+  @media (max-width: 900px) { .builder-wrap { grid-template-columns: 1fr; } }
+
+  .builder-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .input-block {
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    padding: 20px;
+    position: relative;
+  }
+  .input-block label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  .input-block .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 3px 10px;
+  }
+  .input-block[data-type="C"] .pill { background: var(--accent); }
+  .input-block[data-type="A"] .pill { background: var(--accent-2); }
+  .input-block[data-type="O"] .pill { background: var(--accent-4); }
+  .input-block textarea {
+    width: 100%;
+    border: 1px solid var(--ink-soft);
+    background: var(--paper);
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 70px;
+  }
+  .input-block textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+  .input-hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .preview {
+    border: 1.5px solid var(--ink);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 24px;
+    position: sticky;
+    top: 100px;
+    align-self: start;
+  }
+  .preview-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent-3);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .preview-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .preview-content .pc { color: #ff8a65; }
+  .preview-content .pa { color: #81c784; }
+  .preview-content .po { color: #9faaff; }
+  .preview-empty {
+    color: var(--cream-deep);
+    font-style: italic;
+    opacity: 0.6;
+  }
+
+  /* ============ SKILL SECTION ============ */
+  .skill-section {
+    background: var(--cream);
+  }
+  .connect-graphic {
+    margin: 50px 0;
+    padding: 40px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    text-align: center;
+    position: relative;
+  }
+  .connect-graphic .formula {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .connect-graphic .formula .c { color: var(--accent); }
+  .connect-graphic .formula .a { color: var(--accent-2); }
+  .connect-graphic .formula .o { color: var(--accent-4); }
+  .connect-graphic .formula .arrow { color: var(--ink-soft); margin: 0 14px; }
+  .connect-graphic .formula .equals { margin: 0 14px; color: var(--ink-soft); }
+  .connect-graphic .formula .skill {
+    font-style: italic;
+    background: var(--accent-3);
+    padding: 0 12px;
+  }
+  .connect-graphic p {
+    margin-top: 20px;
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+
+  .skill-explainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+  }
+  @media (max-width: 768px) { .skill-explainer { grid-template-columns: 1fr; } }
+
+  .skill-explainer h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    margin-bottom: 16px;
+  }
+  .skill-explainer p { font-size: 15px; color: var(--ink-soft); margin-bottom: 14px; }
+
+  .skill-card {
+    border: 1.5px solid var(--ink);
+    padding: 24px;
+    background: var(--paper);
+  }
+  .skill-card h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .skill-card-list { list-style: none; }
+  .skill-card-list li {
+    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--ink-soft);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .skill-card-list li:last-child { border-bottom: none; }
+  .skill-card-list li::before {
+    content: '✦';
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  /* Antigravity callout */
+  .antigrav-callout {
+    margin-top: 50px;
+    padding: 40px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 1.5px solid var(--ink);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 768px) { .antigrav-callout { grid-template-columns: 1fr; } }
+  .antigrav-icon {
+    width: 100px;
+    height: 100px;
+    border: 2px solid var(--accent-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 50px;
+    font-weight: 900;
+    color: var(--accent-3);
+    transform: rotate(-5deg);
+  }
+  .antigrav-callout h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    margin-bottom: 12px;
+  }
+  .antigrav-callout p { color: var(--cream-deep); font-size: 15px; }
+
+  /* ============ QUIZ / BUILDER ============ */
+  .quiz-section {
+    background: var(--cream);
+    border-top: 1.5px solid var(--ink);
+  }
+  .quiz-container {
+    max-width: 800px;
+    margin: 50px auto 0;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    padding: 40px;
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  @media (max-width: 600px) { .quiz-container { padding: 24px; } }
+
+  .quiz-progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  .quiz-progress .dot {
+    flex: 1;
+    height: 6px;
+    background: var(--cream-deep);
+    transition: background 0.3s;
+  }
+  .quiz-progress .dot.active { background: var(--accent); }
+  .quiz-progress .dot.done { background: var(--accent-2); }
+
+  .quiz-step h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .quiz-step .step-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: inline-block;
+  }
+  .quiz-step p.q-help {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .quiz-step textarea {
+    width: 100%;
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100px;
+    margin-bottom: 14px;
+    resize: vertical;
+  }
+  .quiz-step textarea:focus { outline: 2px solid var(--accent); }
+  .examples {
+    background: var(--cream-deep);
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .examples strong { display: block; margin-bottom: 6px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .examples ul { list-style: none; }
+  .examples li {
+    padding: 4px 0;
+    color: var(--ink-soft);
+  }
+  .examples li::before {
+    content: '→ ';
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .btn {
+    padding: 12px 22px;
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-primary { background: var(--accent); color: var(--paper); border-color: var(--ink); }
+
+  /* Result screen */
+  .quiz-result {
+    display: none;
+  }
+  .quiz-result.active { display: block; }
+  .quiz-result h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .result-skill {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 28px;
+    margin: 24px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border-left: 4px solid var(--accent-3);
+  }
+  .result-skill .lbl { color: var(--accent-3); font-weight: 600; }
+  .result-skill .v { color: #fff; }
+  .result-tips {
+    background: var(--cream-deep);
+    padding: 20px;
+    margin-top: 16px;
+    border-left: 4px solid var(--accent-2);
+  }
+  .result-tips h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  .result-tips ul { padding-left: 18px; font-size: 14px; }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--ink);
+    color: var(--cream-deep);
+    padding: 40px 0;
+    text-align: center;
+    font-size: 13px;
+    border-top: 1.5px solid var(--ink);
+  }
+  footer .logo { color: var(--cream); justify-content: center; display: inline-block; margin-bottom: 12px; }
+  footer .logo span { color: var(--accent-3); }
+
+  /* Reveal animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ============ COPY GATE MODAL ============ */
+  .gate-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26, 20, 16, 0.72);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    padding: 24px;
+  }
+  .gate-modal.is-open { display: flex; }
+  .gate-modal__panel {
+    width: min(560px, 100%);
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    box-shadow: 12px 12px 0 var(--ink);
+    padding: 28px;
+    position: relative;
+  }
+  .gate-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: 1px solid var(--ink);
+    background: var(--cream);
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .gate-modal__eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .gate-modal__title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    line-height: 1.05;
+    margin-bottom: 12px;
+  }
+  .gate-modal__copy {
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+    font-size: 15px;
+  }
+  .gate-form {
+    display: grid;
+    gap: 14px;
+  }
+  .gate-field {
+    display: grid;
+    gap: 6px;
+  }
+  .gate-field label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .gate-field input {
+    width: 100%;
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--ink);
+  }
+  .gate-field input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+  }
+  .gate-note {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .gate-error {
+    min-height: 18px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .gate-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .gate-actions button {
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    color: var(--ink);
+    padding: 12px 16px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .gate-actions .primary {
+    background: var(--accent);
+    color: var(--paper);
+  }
+  .gate-actions button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .gate-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 16px;
+    border: 1.5px solid var(--cream);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    display: none;
+    max-width: min(92vw, 480px);
+    text-align: center;
+  }
+  .gate-toast.is-visible { display: block; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">CAO<span>.method</span></div>
+    <div class="nav-links">
+      <a href="#why">Tại sao?</a>
+      <a href="#cao">3 thành phần</a>
+      <a href="#builder">Thử ngay</a>
+      <a href="#skill">Skill</a>
+      <a href="#quiz">Tự xây dựng</a>
+      <a class="page-switch" href="2.html">Spark (nâng cao) →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <div class="container">
+    <span class="hero-tag">Hướng dẫn cho người mới</span>
+    <h1>
+      Viết prompt <span class="ital">đúng cách</span><br>
+      với công thức <span class="underline">CAO</span>
+    </h1>
+    <p class="hero-sub">
+      Học 3 thành phần đơn giản — <strong>Context</strong>, <strong>Action</strong>, <strong>Output</strong> —
+      để AI hiểu bạn ngay từ lần đầu. Không cần biết code. Không cần biết kỹ thuật.
+    </p>
+    <a href="#why" class="hero-cta">Bắt đầu học →</a>
+  </div>
+</section>
+
+<!-- ============ THE STORY ============ -->
+<section id="why" class="story">
+  <div class="container">
+    <span class="section-num">01 — Vấn đề</span>
+    <h2 class="section-title">Tại sao AI <span class="ital">không hiểu</span> bạn?</h2>
+    <p class="section-intro">
+      Hãy tưởng tượng bạn nhắn cho một nhân viên mới: "Làm cái báo cáo cho tôi". 
+      Họ sẽ làm gì? Báo cáo gì? Cho ai? Dài bao nhiêu? AI cũng vậy.
+    </p>
+
+    <div class="story-grid">
+      <div class="story-bad">
+        <span class="story-label">Prompt mơ hồ</span>
+        <div class="story-prompt">"Viết email cho khách hàng"</div>
+        <p class="story-result">
+          <strong>Kết quả:</strong> AI tạo email chung chung. Bạn phải sửa 5 lần. Mất 30 phút.
+        </p>
+      </div>
+
+      <div class="story-good">
+        <span class="story-label">Prompt rõ ràng</span>
+        <div class="story-prompt">"Tôi là sales B2B (<em>context</em>). Viết email xin lỗi khách hàng vì giao hàng trễ 2 ngày (<em>action</em>). Khoảng 100 chữ, giọng chân thành, có đề xuất giải pháp (<em>output</em>)."</div>
+        <p class="story-result">
+          <strong>Kết quả:</strong> Đúng ý ngay lần đầu. Mất 2 phút.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAO 3 PART ============ -->
+<section id="cao">
+  <div class="container">
+    <span class="section-num">02 — Công thức</span>
+    <h2 class="section-title">Ba thành phần <span class="ital">không thể thiếu</span></h2>
+    <p class="section-intro">
+      Mọi prompt tốt đều có 3 phần này. Hãy nghĩ chúng như 3 câu hỏi mà AI cần biết câu trả lời trước khi bắt tay vào việc.
+    </p>
+
+    <div class="cao-grid">
+      <div class="cao-card" data-cao="C">
+        <div class="cao-letter">C</div>
+        <div class="cao-name">Context</div>
+        <div class="cao-meaning">Bối cảnh — Bạn là ai?</div>
+        <p class="cao-desc">
+          Cho AI biết <strong>bạn là ai, đang làm gì, đối tượng là ai</strong>. Giống như giới thiệu khi gặp người lạ.
+        </p>
+        <div class="cao-example">
+          <strong>Ví dụ</strong>
+          "Tôi là giáo viên tiếng Anh dạy học sinh lớp 6 tại Việt Nam. Học sinh của tôi mới bắt đầu học và có vốn từ rất ít."
+        </div>
+      </div>
+
+      <div class="cao-card" data-cao="A">
+        <div class="cao-letter">A</div>
+        <div class="cao-name">Action</div>
+        <div class="cao-meaning">Hành động — Làm gì?</div>
+        <p class="cao-desc">
+          Yêu cầu AI <strong>phải làm chính xác việc gì</strong>. Dùng động từ mạnh: viết, tóm tắt, dịch, phân tích, gợi ý...
+        </p>
+        <div class="cao-example">
+          <strong>Ví dụ</strong>
+          "Hãy tạo 10 câu hỏi trắc nghiệm về thì hiện tại đơn, mỗi câu có 4 đáp án A/B/C/D."
+        </div>
+      </div>
+
+      <div class="cao-card" data-cao="O">
+        <div class="cao-letter">O</div>
+        <div class="cao-name">Output</div>
+        <div class="cao-meaning">Kết quả — Trông thế nào?</div>
+        <p class="cao-desc">
+          Mô tả <strong>hình thức kết quả</strong>: định dạng, độ dài, giọng văn, ngôn ngữ. Như đặt món tại nhà hàng vậy.
+        </p>
+        <div class="cao-example">
+          <strong>Ví dụ</strong>
+          "Trình bày dạng bảng. Câu hỏi bằng tiếng Anh, giải thích bằng tiếng Việt. Có đáp án ở cuối."
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANALOGY ============ -->
+<section class="analogy-section">
+  <div class="container">
+    <span class="section-num">03 — Cách nhớ</span>
+    <h2 class="section-title">Như đi <span class="ital">nhà hàng</span></h2>
+    <p class="section-intro">
+      Để dễ nhớ, hãy nghĩ bạn là khách trong một nhà hàng và AI là đầu bếp.
+    </p>
+
+    <div class="restaurant">
+      <div class="rest-step">
+        <span class="rest-icon">🪑</span>
+        <h4>Bạn ngồi xuống <span class="label">CONTEXT</span></h4>
+        <p>"Tôi đang đi sinh nhật mẹ, có 4 người, mẹ tôi ăn chay." Đầu bếp cần biết hoàn cảnh để gợi ý đúng.</p>
+      </div>
+      <div class="rest-step">
+        <span class="rest-icon">📝</span>
+        <h4>Bạn gọi món <span class="label">ACTION</span></h4>
+        <p>"Cho tôi 1 phần pasta, 1 phần salad, 1 món tráng miệng." Đây là việc cụ thể đầu bếp phải làm.</p>
+      </div>
+      <div class="rest-step">
+        <span class="rest-icon">🍽️</span>
+        <h4>Bạn yêu cầu cách phục vụ <span class="label">OUTPUT</span></h4>
+        <p>"Pasta ít cay, salad không hành, tráng miệng cho riêng. Mang ra cùng lúc." Đó là form & format.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERACTIVE BUILDER ============ -->
+<section id="builder" class="builder">
+  <div class="container">
+    <span class="section-num">04 — Thực hành</span>
+    <h2 class="section-title">Tự ráp <span class="ital">prompt</span> của bạn</h2>
+    <p class="section-intro">
+      Điền 3 ô bên dưới. Xem cách prompt được ghép lại theo thời gian thực ở bên phải.
+    </p>
+
+    <div class="builder-wrap">
+      <div class="builder-inputs">
+        <div class="input-block" data-type="C">
+          <label><span class="pill">C</span> Context — Bạn là ai? Hoàn cảnh thế nào?</label>
+          <textarea id="ctx" placeholder="Ví dụ: Tôi là chủ shop quần áo online, target khách 18-25 tuổi..."></textarea>
+          <div class="input-hint">💡 Nói rõ vai trò, ngành nghề, đối tượng khách</div>
+        </div>
+
+        <div class="input-block" data-type="A">
+          <label><span class="pill">A</span> Action — Bạn muốn AI làm gì?</label>
+          <textarea id="act" placeholder="Ví dụ: Viết 5 caption Facebook giới thiệu áo phông mới ra mắt..."></textarea>
+          <div class="input-hint">💡 Dùng động từ rõ ràng: viết, tóm tắt, liệt kê, phân tích...</div>
+        </div>
+
+        <div class="input-block" data-type="O">
+          <label><span class="pill">O</span> Output — Kết quả trông ra sao?</label>
+          <textarea id="out" placeholder="Ví dụ: Mỗi caption dưới 50 chữ, giọng vui tươi, có emoji và 2-3 hashtag..."></textarea>
+          <div class="input-hint">💡 Định dạng, độ dài, giọng văn, ngôn ngữ</div>
+        </div>
+      </div>
+
+      <div class="preview">
+        <div class="preview-label">▸ Prompt hoàn chỉnh</div>
+        <div class="preview-content" id="preview">
+          <span class="preview-empty">Hãy điền các ô bên trái để xem prompt được tạo ra...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SKILL SECTION ============ -->
+<section id="skill" class="skill-section">
+  <div class="container">
+    <span class="section-num">05 — Bước tiếp theo</span>
+    <h2 class="section-title">Từ prompt tốt đến <span class="ital">Skill</span> tái sử dụng</h2>
+    <p class="section-intro">
+      Khi bạn dùng cùng một loại prompt nhiều lần (ví dụ: viết email mỗi ngày), 
+      hãy đóng gói nó thành một <strong>Skill</strong> — như công thức nấu ăn lưu sẵn.
+    </p>
+
+    <div class="connect-graphic">
+      <div class="formula">
+        <span class="c">Context</span>
+        <span class="arrow">+</span>
+        <span class="a">Action</span>
+        <span class="arrow">+</span>
+        <span class="o">Output</span>
+        <span class="equals">=</span>
+        <span class="skill">Skill</span>
+      </div>
+      <p>Một Skill = 3 thành phần CAO được ghi sẵn, dùng đi dùng lại không cần gõ lại từ đầu.</p>
+    </div>
+
+    <div class="skill-explainer">
+      <div class="skill-card">
+        <h4>Skill là gì?</h4>
+        <p style="font-size: 14px; color: var(--ink-soft);">
+          Hình dung bạn có một <strong>"nhân viên ảo"</strong> chuyên làm 1 việc cụ thể. 
+          Bạn chỉ cần gọi tên skill và đưa input mới — không cần giải thích lại từ đầu.
+        </p>
+        <ul class="skill-card-list" style="margin-top: 14px;">
+          <li>Tiết kiệm thời gian: không gõ lại context</li>
+          <li>Đồng nhất kết quả: chất lượng ổn định</li>
+          <li>Dễ chia sẻ: gửi skill cho đồng nghiệp dùng</li>
+        </ul>
+      </div>
+
+      <div class="skill-card">
+        <h4>Ví dụ Skill: "Viết email xin lỗi khách"</h4>
+        <ul class="skill-card-list">
+          <li><strong>C:</strong> Tôi là CSKH của shop thời trang online</li>
+          <li><strong>A:</strong> Soạn email xin lỗi khi giao hàng trễ</li>
+          <li><strong>O:</strong> 80-120 chữ, chân thành, có đề xuất voucher</li>
+        </ul>
+        <p style="margin-top: 14px; font-size: 13px; color: var(--ink-soft); font-style: italic;">
+          → Lần sau chỉ cần gõ: "Đơn #1234, trễ 3 ngày" là xong.
+        </p>
+      </div>
+    </div>
+
+    <div class="antigrav-callout">
+      <div class="antigrav-icon">A</div>
+      <div>
+        <h3>Trong Antigravity của Google</h3>
+        <p>
+          <strong>Antigravity</strong> là môi trường lập trình AI của Google nơi bạn có thể tạo các <strong>Skill</strong> tái sử dụng.
+          Mỗi Skill được khai báo bằng đúng 3 phần CAO bạn vừa học: bối cảnh công việc (Context), nhiệm vụ cụ thể (Action), 
+          và tiêu chuẩn kết quả (Output). Khi đã hiểu CAO, bạn đã sẵn sàng tạo Skill cho mình.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ / SKILL BUILDER ============ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-num">06 — Tự thực hành</span>
+    <h2 class="section-title">Xây <span class="ital">Skill đầu tiên</span> cho công việc bạn</h2>
+    <p class="section-intro">
+      Trả lời 5 câu hỏi đơn giản. Cuối cùng bạn sẽ có một Skill hoàn chỉnh có thể dán ngay vào Antigravity.
+    </p>
+
+    <div class="quiz-container">
+      <div class="quiz-progress" id="progress">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="quiz-step" data-step="1">
+        <span class="step-tag">CÂU 1 / 5 — ĐẶT TÊN</span>
+        <h3>Bạn muốn tạo Skill cho công việc nào?</h3>
+        <p class="q-help">Đặt 1 cái tên ngắn gọn cho Skill. Như đặt tên cho 1 "trợ lý ảo".</p>
+        <textarea id="q1" placeholder="Ví dụ: Viết caption Facebook bán hàng"></textarea>
+        <div class="examples">
+          <strong>Gợi ý cho các nghề khác nhau</strong>
+          <ul>
+            <li>Marketing: "Tóm tắt feedback khách hàng"</li>
+            <li>HR: "Soạn JD tuyển dụng"</li>
+            <li>Giáo viên: "Tạo bài tập tiếng Anh lớp 6"</li>
+            <li>Sales: "Viết email follow-up khách"</li>
+            <li>Kế toán: "Giải thích báo cáo tài chính cho sếp"</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="quiz-step" data-step="2" style="display:none;">
+        <span class="step-tag" style="color: var(--accent);">CÂU 2 / 5 — CONTEXT</span>
+        <h3>Bạn là ai? Đang làm trong ngành/môi trường nào?</h3>
+        <p class="q-help">Mô tả vai trò + ngành nghề + đối tượng khách (nếu có). Càng cụ thể càng tốt.</p>
+        <textarea id="q2" placeholder="Ví dụ: Tôi là admin shop quần áo online, bán hàng cho nữ 22-30 tuổi tại Việt Nam, phong cách trẻ trung."></textarea>
+        <div class="examples">
+          <strong>Mẫu câu</strong>
+          <ul>
+            <li>"Tôi là [vai trò] làm trong [ngành], phục vụ [khách hàng]..."</li>
+            <li>"Tôi đang làm [công ty/dự án] tập trung vào [mục tiêu]..."</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="quiz-step" data-step="3" style="display:none;">
+        <span class="step-tag" style="color: var(--accent-2);">CÂU 3 / 5 — ACTION</span>
+        <h3>Skill này phải làm việc gì cụ thể?</h3>
+        <p class="q-help">Bắt đầu bằng động từ. Nói rõ "input vào là gì → output ra là gì".</p>
+        <textarea id="q3" placeholder="Ví dụ: Khi tôi đưa tên sản phẩm + 3 đặc điểm chính, hãy viết 5 caption Facebook để đăng bán."></textarea>
+        <div class="examples">
+          <strong>Động từ thường dùng</strong>
+          <ul>
+            <li>Viết / Soạn / Tạo / Gợi ý / Đề xuất</li>
+            <li>Tóm tắt / Phân tích / So sánh / Liệt kê</li>
+            <li>Dịch / Chỉnh sửa / Kiểm tra lỗi</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="quiz-step" data-step="4" style="display:none;">
+        <span class="step-tag" style="color: var(--accent-4);">CÂU 4 / 5 — OUTPUT</span>
+        <h3>Kết quả phải trông thế nào?</h3>
+        <p class="q-help">Định dạng, độ dài, giọng văn, ngôn ngữ. Hãy hình dung bạn đang đặt món ăn.</p>
+        <textarea id="q4" placeholder="Ví dụ: Mỗi caption 30-50 chữ, giọng vui tươi, có 1-2 emoji, kết thúc bằng câu hỏi gợi tương tác, không quá 2 hashtag."></textarea>
+        <div class="examples">
+          <strong>Các yếu tố nên ghi rõ</strong>
+          <ul>
+            <li>Định dạng: bảng / danh sách / đoạn văn / JSON</li>
+            <li>Độ dài: số chữ / số dòng / số mục</li>
+            <li>Giọng: trang trọng / thân thiện / hài hước / chuyên nghiệp</li>
+            <li>Ngôn ngữ: Việt / Anh / song ngữ</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="quiz-step" data-step="5" style="display:none;">
+        <span class="step-tag">CÂU 5 / 5 — RÀNG BUỘC (tùy chọn)</span>
+        <h3>Có gì AI <em>không nên</em> làm?</h3>
+        <p class="q-help">Liệt kê những điều cấm kỵ. Phần này không bắt buộc nhưng giúp Skill chính xác hơn.</p>
+        <textarea id="q5" placeholder="Ví dụ: Không dùng từ ngữ cường điệu. Không hứa giảm giá khi tôi chưa nói rõ. Không nhắc đối thủ."></textarea>
+        <div class="examples">
+          <strong>Ví dụ ràng buộc</strong>
+          <ul>
+            <li>"Không dùng tiếng Anh, chỉ tiếng Việt"</li>
+            <li>"Không bịa thông tin nếu không chắc"</li>
+            <li>"Không quá 200 chữ"</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="quiz-result" id="result">
+        <span class="step-tag" style="color: var(--accent-2);">✓ HOÀN THÀNH</span>
+        <h3>Skill của bạn đây 🎉</h3>
+        <p style="color: var(--ink-soft); font-size: 15px;">
+          Copy đoạn dưới và dán vào Antigravity (hoặc bất kỳ AI nào — ChatGPT, Gemini, Claude).
+          Lần sau chỉ cần gọi tên Skill và đưa input mới.
+        </p>
+
+        <div class="result-skill" id="resultSkill"></div>
+
+        <div class="result-tips">
+          <h4>💡 Mẹo dùng Skill này</h4>
+          <ul>
+            <li>Lưu lại trong Notes/Docs để dùng lại sau</li>
+            <li>Test với 2-3 input khác nhau, chỉnh sửa nếu chưa ưng</li>
+            <li>Khi kết quả không tốt, thường là Context hoặc Output chưa đủ rõ</li>
+            <li>Có thể tạo nhiều Skill — mỗi việc 1 Skill riêng</li>
+          </ul>
+        </div>
+
+        <div class="quiz-nav">
+          <button class="btn" onclick="openCopyGate()">📋 Copy Skill</button>
+          <button class="btn btn-primary" onclick="restartQuiz()">↻ Tạo Skill mới</button>
+        </div>
+      </div>
+
+      <div class="quiz-nav" id="quizNav">
+        <button class="btn" id="prevBtn" disabled onclick="prevStep()">← Quay lại</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Tiếp theo →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gate-modal" id="copyGate" aria-hidden="true">
+  <div class="gate-modal__panel" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+    <button class="gate-modal__close" type="button" aria-label="Đóng" onclick="closeCopyGate()">×</button>
+    <div class="gate-modal__eyebrow">Thông tin để gửi Mail</div>
+    <h3 class="gate-modal__title" id="gateTitle">Điền thông tin để nhận mẫu Skill</h3>
+    <p class="gate-modal__copy">
+      Họ và tên, ID nhân viên và email ghn sẽ được dùng để gửi bảng mẫu Skill đã tạo qua mail, đồng thời lưu vào Google Sheet ở tab <strong>CAO</strong>.
+    </p>
+    <form class="gate-form" id="copyGateForm">
+      <div class="gate-field">
+        <label for="gateName">Họ và Tên</label>
+        <input id="gateName" type="text" autocomplete="name" />
+      </div>
+      <div class="gate-field">
+        <label for="gateId">ID nhân viên</label>
+        <input id="gateId" type="text" autocomplete="off" />
+      </div>
+      <div class="gate-field">
+        <label for="gateEmail">Email ghn</label>
+        <input id="gateEmail" type="email" autocomplete="email" />
+      </div>
+      <div class="gate-note">Nếu chưa điền đủ, hệ thống sẽ không cho copy Skill.</div>
+      <div class="gate-error" id="gateError"></div>
+      <div class="gate-actions">
+        <button type="button" onclick="closeCopyGate()">Hủy</button>
+        <button type="submit" class="primary" id="gateSubmitBtn">Gửi thông tin & Copy Skill</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="gate-toast" id="gateToast" role="status" aria-live="polite"></div>
+
+<footer>
+  <div class="container">
+    <div class="logo">CAO<span>.method</span></div>
+    <p>Học cách viết prompt — Bài học cho người mới bắt đầu</p>
+    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(244, 234, 213, 0.2); font-size: 14px;">
+      Đã thuần thục CAO? Học tiếp <a href="2.html" style="color: var(--accent-3); border-bottom: 1px solid var(--accent-3); padding-bottom: 1px;">Spark (nâng cao)</a> — framework nâng cao để xây Skill thật cho Antigravity →
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ============ INTERACTIVE PROMPT BUILDER ============
+  const ctx = document.getElementById('ctx');
+  const act = document.getElementById('act');
+  const out = document.getElementById('out');
+  const preview = document.getElementById('preview');
+  const SHEET_WEB_APP_URL = window.SHEET_WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbxL5JwStFHos0S85uZ9dGqi1K-bhSLEI1qswCjrkpFCzesXFkuJ0mm2Qo34hz1JN7xl6A/exec';
+  const COPY_CONTEXT = {
+    tab: 'CAO',
+    skillLabel: 'CAO'
+  };
+  let currentSkillPlain = '';
+  let gateOpen = false;
+
+  function updatePreview() {
+    const c = ctx.value.trim();
+    const a = act.value.trim();
+    const o = out.value.trim();
+
+    if (!c && !a && !o) {
+      preview.innerHTML = '<span class="preview-empty">Hãy điền các ô bên trái để xem prompt được tạo ra...</span>';
+      return;
+    }
+
+    let html = '';
+    if (c) html += '<span class="pc">[CONTEXT]</span>\n' + escapeHtml(c) + '\n\n';
+    if (a) html += '<span class="pa">[ACTION]</span>\n' + escapeHtml(a) + '\n\n';
+    if (o) html += '<span class="po">[OUTPUT]</span>\n' + escapeHtml(o);
+    preview.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  [ctx, act, out].forEach(el => el.addEventListener('input', updatePreview));
+
+  // ============ QUIZ ============
+  let currentStep = 1;
+  const totalSteps = 5;
+
+  function showStep(n) {
+    document.querySelectorAll('.quiz-step').forEach(s => s.style.display = 'none');
+    const step = document.querySelector(`.quiz-step[data-step="${n}"]`);
+    if (step) step.style.display = 'block';
+
+    // Progress
+    document.querySelectorAll('#progress .dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (i + 1 < n) dot.classList.add('done');
+      if (i + 1 === n) dot.classList.add('active');
+    });
+
+    // Buttons
+    document.getElementById('prevBtn').disabled = (n === 1);
+    document.getElementById('nextBtn').textContent = (n === totalSteps) ? 'Tạo Skill ✓' : 'Tiếp theo →';
+  }
+
+  function nextStep() {
+    const input = document.getElementById('q' + currentStep);
+    if (currentStep <= 4 && (!input || !input.value.trim())) {
+      input.focus();
+      input.style.borderColor = 'var(--accent)';
+      input.placeholder = '⚠ Hãy điền vào đây trước khi tiếp tục';
+      setTimeout(() => { input.style.borderColor = ''; }, 1500);
+      return;
+    }
+
+    if (currentStep < totalSteps) {
+      currentStep++;
+      showStep(currentStep);
+    } else {
+      showResult();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 1) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  }
+
+  function showResult() {
+    document.querySelectorAll('.quiz-step').forEach(s => s.style.display = 'none');
+    document.getElementById('quizNav').style.display = 'none';
+    document.getElementById('result').classList.add('active');
+
+    document.querySelectorAll('#progress .dot').forEach(d => d.classList.add('done'));
+
+    const name = document.getElementById('q1').value.trim() || '(chưa đặt tên)';
+    const c = document.getElementById('q2').value.trim();
+    const a = document.getElementById('q3').value.trim();
+    const o = document.getElementById('q4').value.trim();
+    const cons = document.getElementById('q5').value.trim();
+
+    const skill = buildSkill(name, c, a, o, cons);
+    document.getElementById('resultSkill').innerHTML = skill;
+    currentSkillPlain = buildSkillPlain(name, c, a, o, cons);
+  }
+
+  function buildSkill(name, c, a, o, cons) {
+    let s = '';
+    s += '<span class="lbl">SKILL:</span> <span class="v">' + escapeHtml(name) + '</span>\n\n';
+    s += '<span class="lbl">[CONTEXT]</span>\n<span class="v">' + escapeHtml(c) + '</span>\n\n';
+    s += '<span class="lbl">[ACTION]</span>\n<span class="v">' + escapeHtml(a) + '</span>\n\n';
+    s += '<span class="lbl">[OUTPUT]</span>\n<span class="v">' + escapeHtml(o) + '</span>';
+    if (cons) {
+      s += '\n\n<span class="lbl">[CONSTRAINTS]</span>\n<span class="v">' + escapeHtml(cons) + '</span>';
+    }
+    return s;
+  }
+
+  function buildSkillPlain(name, c, a, o, cons) {
+    let text = `SKILL: ${name}\n\n[CONTEXT]\n${c}\n\n[ACTION]\n${a}\n\n[OUTPUT]\n${o}`;
+    if (cons) text += `\n\n[CONSTRAINTS]\n${cons}`;
+    return text;
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('gateToast');
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
+  }
+
+  function openCopyGate() {
+    if (!currentSkillPlain) {
+      showToast('Hãy tạo xong Skill trước rồi mới copy nhé.');
+      return;
+    }
+    gateOpen = true;
+    document.getElementById('copyGate').classList.add('is-open');
+    document.getElementById('copyGate').setAttribute('aria-hidden', 'false');
+    document.getElementById('gateError').textContent = '';
+    document.getElementById('gateName').focus();
+  }
+
+  function closeCopyGate() {
+    gateOpen = false;
+    document.getElementById('copyGate').classList.remove('is-open');
+    document.getElementById('copyGate').setAttribute('aria-hidden', 'true');
+  }
+
+  function validateGateForm() {
+    const name = document.getElementById('gateName').value.trim();
+    const empId = document.getElementById('gateId').value.trim();
+    const email = document.getElementById('gateEmail').value.trim();
+    const error = document.getElementById('gateError');
+    if (!name || !empId || !email) {
+      error.textContent = 'Vui lòng điền đầy đủ Họ và Tên, ID nhân viên và Email ghn.';
+      return null;
+    }
+    error.textContent = '';
+    return { name, empId, email };
+  }
+
+  async function postToSheet(payload) {
+    if (!SHEET_WEB_APP_URL || SHEET_WEB_APP_URL.includes('PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
+      throw new Error('Chưa cấu hình URL Apps Script để gửi Google Sheet.');
+    }
+    await fetch(SHEET_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async function copyCurrentSkill(button) {
+    if (!currentSkillPlain) return;
+    await navigator.clipboard.writeText(currentSkillPlain);
+    const original = button.textContent;
+    button.textContent = '✓ Đã gửi & copied';
+    setTimeout(() => { button.textContent = original; }, 2000);
+  }
+
+  async function submitCopyGate(event) {
+    event.preventDefault();
+    const data = validateGateForm();
+    if (!data) return;
+
+    const submitBtn = document.getElementById('gateSubmitBtn');
+    submitBtn.disabled = true;
+    const original = submitBtn.textContent;
+    submitBtn.textContent = 'Đang gửi...';
+
+    try {
+      let sheetSent = true;
+      try {
+        await postToSheet({
+          ...data,
+          sheet: COPY_CONTEXT.tab,
+          skill: COPY_CONTEXT.skillLabel,
+          skillText: currentSkillPlain,
+          page: '1.html',
+          timestamp: new Date().toISOString(),
+        });
+      } catch (err) {
+        sheetSent = false;
+        showToast(err.message || 'Chưa gửi được lên Google Sheet.');
+      }
+      await copyCurrentSkill(submitBtn);
+      showToast(sheetSent ? 'Đã gửi thông tin và copy Skill vào clipboard.' : 'Đã copy Skill, nhưng Google Sheet chưa được cấu hình endpoint.');
+      closeCopyGate();
+    } catch (err) {
+      document.getElementById('gateError').textContent = err.message || 'Không gửi được dữ liệu.';
+      showToast('Chưa gửi được lên Google Sheet.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = original;
+    }
+  }
+
+  function copySkill() {
+    openCopyGate();
+  }
+
+  function restartQuiz() {
+    currentStep = 1;
+    ['q1','q2','q3','q4','q5'].forEach(id => document.getElementById(id).value = '');
+    currentSkillPlain = '';
+    document.getElementById('result').classList.remove('active');
+    document.getElementById('quizNav').style.display = 'flex';
+    showStep(1);
+    document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  document.getElementById('copyGateForm').addEventListener('submit', submitCopyGate);
+  document.getElementById('copyGate').addEventListener('click', (e) => {
+    if (e.target.id === 'copyGate') closeCopyGate();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && gateOpen) closeCopyGate();
+  });
+
+  // ============ SCROLL REVEAL ============
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.cao-card, .rest-step, .skill-card, .story-bad, .story-good').forEach(el => {
+    el.classList.add('reveal');
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
