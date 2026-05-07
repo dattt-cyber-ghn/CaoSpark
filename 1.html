@@ -753,6 +753,18 @@
     transform: translateY(0);
   }
 
+  body.profile-ready > :not(.gate-modal):not(.gate-toast) {
+    visibility: visible;
+    pointer-events: auto;
+  }
+  body:not(.profile-ready) > :not(.gate-modal):not(.gate-toast) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  body.lock-scroll {
+    overflow: hidden;
+  }
+
   /* ============ COPY GATE MODAL ============ */
   .gate-modal {
     position: fixed;
@@ -864,6 +876,37 @@
   .gate-actions button:disabled {
     opacity: 0.6;
     cursor: wait;
+  }
+  @media (max-width: 640px) {
+    .gate-modal {
+      padding: 12px;
+      align-items: flex-end;
+    }
+    .gate-modal__panel {
+      width: 100%;
+      max-height: 90vh;
+      overflow: auto;
+      padding: 18px 16px;
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25);
+    }
+    .gate-modal__title {
+      font-size: 24px;
+      margin-right: 36px;
+    }
+    .gate-modal__copy {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .gate-field input {
+      padding: 11px 12px;
+    }
+    .gate-actions {
+      flex-direction: column;
+    }
+    .gate-actions button {
+      width: 100%;
+    }
   }
   .gate-toast {
     position: fixed;
@@ -1501,6 +1544,8 @@
     const data = validateGateForm();
     if (!data) return;
     saveProfile(data);
+    document.body.classList.add('profile-ready');
+    document.body.classList.remove('lock-scroll');
     showToast('Đã lưu thông tin. Bây giờ bạn có thể nộp bài.');
     closeCopyGate();
   }
@@ -1555,18 +1600,19 @@
     document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
   }
 
-  document.getElementById('copyGateForm').addEventListener('submit', saveProfileFromGate);
-  document.getElementById('copyGate').addEventListener('click', (e) => {
-    if (e.target.id === 'copyGate') closeCopyGate();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && gateOpen) closeCopyGate();
-  });
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', openCopyGate);
+  const savedProfile = getSavedProfile();
+  if (savedProfile?.name && savedProfile?.empId && savedProfile?.email) {
+    document.body.classList.add('profile-ready');
+    document.body.classList.remove('lock-scroll');
   } else {
-    openCopyGate();
+    document.body.classList.add('lock-scroll');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', openCopyGate);
+    } else {
+      openCopyGate();
+    }
   }
+  document.getElementById('copyGateForm').addEventListener('submit', saveProfileFromGate);
 
   // ============ SCROLL REVEAL ============
   const observer = new IntersectionObserver((entries) => {
